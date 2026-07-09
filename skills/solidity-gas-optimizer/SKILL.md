@@ -66,7 +66,7 @@ After the last candidate, run the FULL suite once. If it is red, bisect the kept
 
 ## Phase 4 — Report
 
-Fill `templates/report.md`. Findings are numbered GAS-01… ordered by severity. Include all four populations: applied-and-measured, team-decision (Tier B survivors), advisory, and rejected with their measured evidence.
+Fill `templates/report.md` and write it to `<repo-root>/gas-report-<target>-<date>.md`, untracked (never commit it unless asked). The report is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered GAS-01… ordered by severity. Include all four populations: applied-and-measured, team-decision (Tier B survivors), advisory, and rejected with their measured evidence.
 
 Severity (impact axis, orthogonal to tier):
 
