@@ -34,12 +34,13 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 ## Phase 0 — Discover
 
 1. Run `scripts/detect-toolchain.sh <repo-root>`. It reports the framework, test commands, measurement commands, and compiler settings, and exits nonzero when the repo cannot be measured (unsupported toolchain, missing `forge`, or Hardhat without `hardhat-gas-reporter`). Nonzero exit means the prerequisites are not met: stop and report what is missing.
-2. Read the target repo's CLAUDE.md, GUIDELINES/CONTRIBUTING, and `.claude/gas-policy.md` if present. Extract constraints that promote or demote tiers (a storage-layout freeze makes packing Tier C; an assembly-averse style guide demotes all ASM cards). Record the active policy in the report.
-3. Fix scope: the files the user named, otherwise the main contracts directory. List the files explicitly before starting.
+2. Choose the measurement tool per target, not per repo: find where the target's tests actually live. A repo-wide Foundry preference is wrong when the target is only covered by Hardhat tests, and vice versa. For Hardhat, read the config to learn how the gas reporter is enabled (`REPORT_GAS`, a `GAS` yargs env option, or a config flag); do not assume the env var name.
+3. Read the target repo's CLAUDE.md, GUIDELINES/CONTRIBUTING, and `.claude/gas-policy.md` if present. Extract constraints that promote or demote tiers (a storage-layout freeze makes packing Tier C; an assembly-averse style guide demotes all ASM cards). Record the active policy in the report.
+4. Fix scope: the files the user named, otherwise the main contracts directory. List the files explicitly before starting.
 
 ## Phase 1 — Baseline
 
-1. Run the full test suite once. Red means stop and report.
+1. Run the test suite once; red means stop and report. When the user scopes the audit to specific contracts and nothing else in the repo imports them (verify with a grep), scope the baseline and validation to the target's test files plus a full compile instead of the whole suite, and record the narrowed validation in the report. Wide repos make full-suite runs per candidate prohibitive; scoped-but-recorded beats skipped.
 2. Run `scripts/gas-baseline.sh <framework> <baseline-dir> <repo-root>`. Put the baseline dir in scratch space, never inside the repo. If the baseline command fails, stop; without a baseline there is nothing to measure against.
 3. Note in-scope contracts with weak or missing test coverage; their findings can compile and pass tests but cannot be called measured, and must be labeled accordingly.
 
@@ -57,8 +58,8 @@ Work on a dedicated branch (`gas/<scope>`). For each transform candidate, strict
 
 1. Apply the minimal diff for this one card.
 2. Compile, then run targeted tests: test files matching the contract name, plus any test file that imports or deploys the contract (grep the test directory). Red tests mean either a bad application or a real behavior change; one retry, then revert and record.
-3. Measure with `scripts/gas-compare.sh` against the baseline.
-4. Improvement above noise (single-digit deltas in snapshot output are noise) → commit as `gas: <CARD-ID> <file>: <summary> (<delta>)`. Flat or regression → revert and record.
+3. Measure with `scripts/gas-compare.sh` against the baseline. Record the deployment/code-size delta alongside the runtime delta: bigger code is a real cost, and for internal-function libraries it lands in every consumer contract.
+4. Improvement above noise (single-digit deltas are noise) → run the project's formatter and linter on the touched file, then commit as `gas: <CARD-ID> <file>: <summary> (<delta>)`. Flat or regression → revert and record. If a pre-commit hook fails for reasons that provably predate and are unrelated to the staged change (e.g. the user's dirty working tree), commit with `--no-verify` and record that in the report.
 5. Tier B survivors stay on the branch flagged for explicit review; never present any survivor as a done deal. The merge decision is the team's for every finding.
 
 After the last candidate, run the FULL suite once. If it is red, bisect the kept commits to find the interaction and drop the offender. Keep the loop serial: interleaved candidates corrupt gas attribution.
