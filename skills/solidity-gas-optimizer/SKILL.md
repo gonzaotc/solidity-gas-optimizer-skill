@@ -10,12 +10,13 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 ## Non-negotiables
 
 1. Never report a gas number you did not measure. Advisory findings may carry estimates, clearly labeled as estimates.
-2. Nothing proceeds on a red baseline. If the test suite fails before you change anything, stop and report that instead.
-3. One transform per commit. Gas attribution and human cherry-picking both depend on it.
-4. Revert anything that measures flat or worse, and record it in the report's rejected table. Negative results are findings.
-5. Never change public/external signatures, storage layout of deployed or upgradeable contracts, event/error shapes, or observable behavior. Repo policy may tighten this; it never defaults to relaxed.
-6. Passing tests are necessary, not sufficient. If a transform touches lines no test exercises, say so in the finding instead of calling it verified.
-7. Findings are valid only for the compiler settings they were measured under. Record solc version, optimizer runs, and via-IR in the report.
+2. No measurement, no run. Prerequisites: a supported toolchain (Foundry or Hardhat) with a working gas reporter (`forge snapshot`, or `hardhat-gas-reporter` for Hardhat-only projects). If `detect-toolchain.sh` exits nonzero, stop and tell the user what is missing; never fall back to estimating transform findings.
+3. Nothing proceeds on a red baseline. If the test suite fails before you change anything, stop and report that instead.
+4. One transform per commit. Gas attribution and human cherry-picking both depend on it.
+5. Revert anything that measures flat or worse, and record it in the report's rejected table. Negative results are findings.
+6. Never change public/external signatures, storage layout of deployed or upgradeable contracts, event/error shapes, or observable behavior. Repo policy may tighten this; it never defaults to relaxed.
+7. Passing tests are necessary, not sufficient. If a transform touches lines no test exercises, say so in the finding instead of calling it verified.
+8. Findings are valid only for the compiler settings they were measured under. Record solc version, optimizer runs, and via-IR in the report.
 
 ## Reference catalog
 
@@ -26,14 +27,14 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 ## Phase 0 — Discover
 
-1. Run `scripts/detect-toolchain.sh <repo-root>`. It reports the framework, test commands, measurement commands, and compiler settings.
+1. Run `scripts/detect-toolchain.sh <repo-root>`. It reports the framework, test commands, measurement commands, and compiler settings, and exits nonzero when the repo cannot be measured (unsupported toolchain, missing `forge`, or Hardhat without `hardhat-gas-reporter`). Nonzero exit means the prerequisites are not met: stop and report what is missing.
 2. Read the target repo's CLAUDE.md, GUIDELINES/CONTRIBUTING, and `.claude/gas-policy.md` if present. Extract constraints that promote or demote tiers (a storage-layout freeze makes packing Tier C; an assembly-averse style guide demotes all ASM cards). Record the active policy in the report.
 3. Fix scope: the files the user named, otherwise the main contracts directory. List the files explicitly before starting.
 
 ## Phase 1 — Baseline
 
 1. Run the full test suite once. Red means stop and report.
-2. Run `scripts/gas-baseline.sh <framework> <baseline-dir> <repo-root>`. Put the baseline dir in scratch space, never inside the repo.
+2. Run `scripts/gas-baseline.sh <framework> <baseline-dir> <repo-root>`. Put the baseline dir in scratch space, never inside the repo. If the baseline command fails, stop; without a baseline there is nothing to measure against.
 3. Note in-scope contracts with weak or missing test coverage; their findings can compile and pass tests but cannot be called measured, and must be labeled accordingly.
 
 ## Phase 2 — Scan
