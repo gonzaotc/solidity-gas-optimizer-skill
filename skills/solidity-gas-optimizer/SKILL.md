@@ -1,6 +1,12 @@
 ---
 name: solidity-gas-optimizer
 description: Run a measured gas-optimization audit on Solidity code. Use when asked to gas-optimize contracts, reduce gas costs, run a gas audit, find gas savings, profile gas usage, or judge whether an optimization is worth its readability, auditability, or security cost. Works on Foundry and Hardhat projects.
+allowed-tools: Read, Glob, Grep, Edit, Write, Bash, Agent
+inputs:
+  scope:
+    type: text
+    prompt: "Which files or directories should be audited? (default: the main contracts directory)"
+    required: false
 ---
 
 # Solidity Gas Optimizer
