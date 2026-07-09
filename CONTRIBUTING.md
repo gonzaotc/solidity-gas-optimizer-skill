@@ -38,7 +38,7 @@ Note on the seed catalog: cards distilled from the RareSkills article keep the a
 Rules:
 
 - **Kind.** `transform` = mechanically applicable as a local diff, verifiable by tests and measurement. `advisory` = design decision; reported, never auto-applied.
-- **Tier.** `A` = no meaningful readability/auditability/security cost; auto-applied when it measures an improvement. `B` = real tradeoff; humans decide. `C` = never applied; security hazards, deprecated mechanics, API or storage-layout breakers.
+- **Tier.** A cost prior for the optimizer, not a merge permission (humans decide every merge). `A` = no meaningful readability/auditability/security cost; applied and kept on the work branch when it measures an improvement. `B` = real tradeoff; flagged for explicit team review. `C` = never applied; security hazards, deprecated mechanics, API or storage-layout breakers.
 - **Stay current.** If a technique's validity changed with an EVM upgrade or compiler version, the card must say so in Risks with the EIP or solc version. A card that overstates savings is worse than no card.
 - **Paraphrase.** Never copy text or code from a source verbatim; write original minimal examples and cite the source in the Source field.
 - Cards are self-contained (no "see card X") and at most ~18 lines.

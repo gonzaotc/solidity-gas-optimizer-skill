@@ -1,6 +1,6 @@
 # solidity-gas-optimizer
 
-A Claude Code skill that runs measured gas-optimization audits on Solidity code: scan against a curated 84-technique catalog, apply candidates one commit at a time, verify tests, measure the real delta, and challenge every survivor with an adversarial tradeoff analysis. The deliverable is an audit-style report plus a work branch; humans decide what merges.
+A skill that runs measured gas-optimization audits on Solidity code: scan against a curated techniques catalog, apply candidates one commit at a time, verify tests, measure the real delta, and then challenge every survivor with an adversarial tradeoff analysis. The deliverable is an audit-style report plus a work branch; humans decide what merges.
 
 Idiomatic Solidity is the default. An optimization must pay for its complexity.
 
@@ -8,7 +8,7 @@ Idiomatic Solidity is the default. An optimization must pay for its complexity.
 
 The skill only reports measured numbers, so it refuses to run when it cannot measure:
 
-- **A supported toolchain**: Foundry or Hardhat.
+- **A supported toolchain**: Foundry or Hardhat are supported.
   - Foundry: `forge` on PATH. `forge snapshot` is the measurement tool, and is preferred when both frameworks are present.
   - Hardhat: `hardhat-gas-reporter` installed (plus `node_modules`). The reporter only covers functions the tests exercise.
 - **A green test suite.** The baseline must pass before any change is attempted.
@@ -26,7 +26,7 @@ No toolchain or no gas reporter stops the run at discovery. A red baseline stops
 | 4 Report | Severity-ranked report with measured deltas, negative results included | |
 | 5 Challenge | Fresh-context tradeoff analyzer argues against every finding | |
 
-Tier B findings ship as `team-decision` with a measured price tag; nothing merges without a human.
+Every finding ends with a tradeoff verdict (`recommend` / `team-decision` / `reject`) and a measured delta; humans decide every merge. Tiers only gate what the skill may attempt during the run: A = no complexity cost, B = real tradeoff, C = never applied.
 
 ## Install and use
 

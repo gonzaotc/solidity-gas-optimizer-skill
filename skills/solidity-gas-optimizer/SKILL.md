@@ -23,7 +23,7 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 `references/INDEX.md` lists every technique: ID, kind, tier, detect hint. Read INDEX.md in full at scan time. Open a category file (`references/storage.md` etc.) only when its hints match the code under review. Never scan from memory alone; walk the checklist.
 
 - **Kind** `transform` = applicable as a local diff, enters the verify loop. `advisory` = design-level, goes straight to the report as a labeled estimate.
-- **Tier** `A` = apply autonomously when it measures an improvement. `B` = apply and measure on the work branch, but the verdict belongs to humans. `C` = never apply; report only.
+- **Tier** is a cost prior, not a merge permission. `A` = no meaningful complexity cost: apply and keep on the work branch when it measures an improvement. `B` = real tradeoff: apply and measure, flagged for explicit review. `C` = never apply; report only. Every surviving change, A or B, gets a tradeoff verdict in Phase 5 and merges only by human decision; tiers decide what the run may attempt and where reviewers spend attention.
 
 ## Phase 0 — Discover
 
@@ -53,7 +53,7 @@ Work on a dedicated branch (`gas/<scope>`). For each transform candidate, strict
 2. Compile, then run targeted tests: test files matching the contract name, plus any test file that imports or deploys the contract (grep the test directory). Red tests mean either a bad application or a real behavior change; one retry, then revert and record.
 3. Measure with `scripts/gas-compare.sh` against the baseline.
 4. Improvement above noise (single-digit deltas in snapshot output are noise) → commit as `gas: <CARD-ID> <file>: <summary> (<delta>)`. Flat or regression → revert and record.
-5. Tier B survivors stay on the branch but are marked `team-decision` in the report; never present them as done deals.
+5. Tier B survivors stay on the branch flagged for explicit review; never present any survivor as a done deal. The merge decision is the team's for every finding.
 
 After the last candidate, run the FULL suite once. If it is red, bisect the kept commits to find the interaction and drop the offender. Keep the loop serial: interleaved candidates corrupt gas attribution.
 

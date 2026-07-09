@@ -1,6 +1,6 @@
 # Technique index
 
-The scan checklist: one row per technique, 84 total. Read this file in full when scanning; open a category file only when a Detect hint matches the code under review. Kind `transform` enters the verify loop; `advisory` is report-only. Tier A = auto-apply when measured, B = humans decide, C = never apply.
+The scan checklist: one row per technique, 84 total. Read this file in full when scanning; open a category file only when a Detect hint matches the code under review. Kind `transform` enters the verify loop; `advisory` is report-only. Tier is a cost prior: A = no complexity cost, B = real tradeoff, C = never apply. Every merge is a human decision regardless of tier.
 
 | ID | Technique | Kind | Tier | Detect hint |
 |----|-----------|------|------|-------------|
