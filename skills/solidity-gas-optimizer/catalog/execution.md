@@ -88,10 +88,14 @@ Local codegen and execution-cost techniques that stay in plain Solidity: compari
 - **Hint**: for-loops in gas-critical paths
 - **Transform**: guard the zero-iteration case, then loop with `do { ... } while (cond);`
 ```solidity
-if (times == 0) return;
+if (times == 0) {
+    return;
+}
 uint256 i;
 do {
-    unchecked { ++i; }
+    unchecked {
+        ++i;
+    }
 } while (i < times);
 ```
 - **Savings**: the condition is checked after the body, removing one conditional jump per iteration; remains a net saving even with the added zero-iteration guard

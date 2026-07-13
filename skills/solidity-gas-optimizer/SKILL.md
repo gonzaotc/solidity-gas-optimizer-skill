@@ -11,14 +11,13 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 ## Non-negotiables
 
-1. Never report a gas number you did not measure. Advisory findings may carry estimates, clearly labeled as estimates.
+1. Never report a gas number you did not measure and verified. Advisory findings may carry estimates, which MUST clearly labeled as estimates.
 2. Do not run without measurement. Prerequisites: a supported toolchain (Foundry or Hardhat) with a working gas reporter (`forge snapshot`, or `hardhat-gas-reporter` for Hardhat-only projects). If `detect-toolchain.sh` exits nonzero, stop and tell the user what is missing; never fall back to estimating transform findings.
 3. Do not proceed on a failing baseline. If the test suite fails before you change anything, stop and report that instead.
 4. One transform per commit. Gas attribution and human cherry-picking both depend on it.
-5. Revert anything that measures flat or worse, and record it in the report's rejected table. Negative results are findings.
-6. Never change public/external signatures, storage layout of deployed or upgradeable contracts, event/error shapes, or observable behavior. Repository policy may tighten these constraints; it never relaxes them.
-7. Passing tests are necessary, not sufficient. If a transform touches lines no test exercises, say so in the finding instead of calling it verified.
-8. Findings are valid only for the compiler settings they were measured under. Record solc version, optimizer runs, and via-IR in the report.
+5. Revert anything that measures flat or worse, or breaks a test, and record it in the report's rejected table. Negative results are findings.
+6. Passing tests are necessary, not sufficient. If a transform touches lines no test exercises, say so in the finding instead of calling it verified and recommend to add tests.
+7. Findings are valid only for the compiler settings they were measured under. Record solc version, optimizer runs, and via-IR in the report.
 
 ## Reference catalog
 
@@ -30,7 +29,7 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 1. Run `scripts/detect-toolchain.sh <repo-root>`. It reports the framework, test commands, measurement commands, and compiler settings, and exits nonzero when the repo cannot be measured (unsupported toolchain, missing `forge`, or Hardhat without `hardhat-gas-reporter`). Nonzero exit means the prerequisites are not met: stop and report what is missing.
 2. Choose the measurement tool per target, not per repo: find where the target's tests actually live. A repo-wide Foundry preference is wrong when the target is only covered by Hardhat tests, and vice versa. For Hardhat, read the config to learn how the gas reporter is enabled (`REPORT_GAS`, a `GAS` yargs env option, or a config flag); do not assume the env var name.
-3. Resolve the gas policy, first match wins: (1) a policy the user named when invoking the skill; (2) the target repo's `.claude/gas-policy.md`, then a `gas-policy.md` at the repo root; (3) the shipped defaults in the tradeoffs skill. Its schema is `templates/gas-policy.md`. Also read the target's CLAUDE.md and GUIDELINES/CONTRIBUTING for constraints. Apply the policy's hard constraints and report-only reclassifications (a storage-layout freeze makes packing report-only; an assembly-averse style makes ASM cards report-only), and carry its context weighting and noise threshold into Phase 5. Record which policy was used in the report.
+3. Resolve the gas policy, first match wins: (1) a policy the user named when invoking the skill; (2) the target repo's `.claude/gas-policy.md`, then a `gas-policy.md` at the repo; (3) the shipped defaults in the tradeoffs skill. Its schema is `templates/gas-policy.md`. Also read the target's CLAUDE.md (if existant), README.md, TESTING.md (if existant) and GUIDELINES/CONTRIBUTING (if existant) for constraints. Apply the policy's hard constraints and report-only reclassifications (a storage-layout freeze makes packing report-only; an assembly-averse style makes ASM cards report-only), and carry its context weighting and noise threshold into Phase 5. Record which policy was used in the report.
 4. Fix scope: the files the user named, otherwise the main contracts directory. List the files explicitly before starting.
 
 ## Phase 1: Baseline
@@ -43,8 +42,8 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 ## Phase 2: Scan
 
 1. Read `catalog/INDEX.md`.
-2. Scan hottest-first: take the Phase 1 ranking and walk the catalog against the top functions before anything else, since that is where a matched technique repays most. Then sweep the remaining in-scope code against the full INDEX so nothing is missed. When a Detect hint matches, open the category file and check the card's full Preconditions before recording a candidate.
-3. The catalog is the minimum scan set, not a ceiling. If you see a real gas waste with no matching card, record it as an `uncarded` candidate; it earns a finding only by passing the same Phase 3 verify loop and Phase 5 challenge as any card. Never claim a saving from memory without measuring it. Flag survivors for a follow-up card via the reference-creator skill.
+2. Scan hottest-first: take the Phase 1 ranking and walk the catalog against the top functions before anything else, since that is where a matched technique repays most. Then sweep the remaining in-scope code against the full INDEX so nothing is missed. When a Detect hint matches or sounds slightly relevant, open the category file and check the card's full Preconditions before recording a candidate.
+3. The catalog is the minimum scan set, not a ceiling and may be incomplete. If you see a real gas waste with no matching card, record it as an `uncarded` candidate; it earns a finding only by passing the same Phase 3 verify loop and Phase 5 challenge as any card. Never claim a saving from memory without measuring it. Flag survivors for a follow-up card via the reference-creator skill.
 4. Record candidates as `{card ID or "uncarded", location, why it applies, estimated impact, kind after policy}`.
 5. Advisory candidates (including any the policy reclassified to report-only) skip Phase 3 and go straight to the report.
 6. Order the collected transform candidates for Phase 3 by expected value: hot paths and per-call savings before deploy-only and cold paths.
@@ -73,9 +72,9 @@ Severity (impact axis):
 
 ## Phase 5: Tradeoff challenge
 
-The optimizer must not grade its own work. Spawn a fresh-context agent (Agent tool) and give it: the tradeoff rubric (`../solidity-gas-tradeoffs-analysis/SKILL.md`), the gas policy resolved in Phase 0, the draft report, and the diffs (`git show` of each kept commit). Its job is to argue against each finding first, then issue `recommend` / `team-decision` / `reject` verdicts, each with a price tag. Merge its verdicts and rationale into the report verbatim; do not soften them. For `reject`, revert that commit and move the finding to the rejected table with the analyzer's reason.
+The optimizer MUST NOT grade its own work. Spawn a fresh-context agent (Agent tool). If your environment can route it to a different model or provider than the scanner, prefer that (e.g. Claude scans, a different provider runs such as openai or grok the adversarial tradeoff pass); otherwise a fresh context on the same model is fine as a last resort. Give it: the tradeoff rubric (`../solidity-gas-tradeoffs-analysis/SKILL.md`), the gas policy resolved in Phase 0, the draft report, and the diffs (`git show` of each kept commit). Its job is to argue against each finding first, then issue `recommend` / `team-decision` / `reject` verdicts, each with a price tag. Merge its verdicts and rationale into the report verbatim; do not soften them. For `reject`, revert that commit and move the finding to the rejected table with the analyzer's reason.
 
-If no Agent tool is available, do the challenge in a separate pass: re-read `../solidity-gas-tradeoffs-analysis/SKILL.md`, adopt the skeptic role, and write the case against each finding before issuing any verdict.
+If no Agent tool is available (worst case), do the challenge in a separate pass: re-read `../solidity-gas-tradeoffs-analysis/SKILL.md`, adopt the skeptic role, and write the case against each finding before issuing any verdict.
 
 ## Deliverable
 

@@ -1,6 +1,6 @@
 # Source coverage map
 
-Proof of full coverage of seed sources. Every item of a distilled publication maps to exactly one card or to a recorded omission. When adding cards from a new source, extend this file; when adding an original card, cite "original contribution" in the card and skip this file. Retired IDs stay recorded here so they are never reused.
+Optional attribution and coverage aid: credits sources and maps which article item each card came from. Not strictly required. Cards may be added from pasted snippets with no source, and those need no entry here. When you do work from a publication, mapping its items here documents coverage. Retired IDs stay recorded here so they are never reused.
 
 ## RareSkills Book of Gas Optimization
 

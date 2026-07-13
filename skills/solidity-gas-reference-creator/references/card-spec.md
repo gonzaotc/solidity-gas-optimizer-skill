@@ -32,7 +32,7 @@ File is a routing bucket, not identity: the ID is a card's identity and never ch
 - **Savings**: <magnitude and the EVM/opcode mechanism producing it>
 - **Preconditions**: <when it actually works: optimizer settings, value ranges, context>
 - **Risks**: <semantic changes, security implications, readability cost; "none" only if truly none>
-- **Source**: <publication and item, or "original contribution">
+- **Source** (optional): <publication and item, to credit the author; omit if the material was pasted with no known source>
 ```
 
 Rules:
@@ -40,5 +40,5 @@ Rules:
 - **Kind.** `transform` = mechanically applicable as a local diff, verifiable by tests and measurement; enters the verify loop and the Phase 5 challenge. `advisory` = reported as a labeled estimate, never auto-applied. Use `advisory` for design-level changes that are not a local diff, and for techniques that must not be applied mechanically: security hazards, deprecated mechanics, API or storage-layout breakers, and contest-only cleverness.
 - **Hint.** One short line, since the whole index is read at scan time.
 - **Stay current.** If a technique's validity changed with an EVM upgrade or compiler version, the card must say so in Risks with the EIP or solc version. A card that overstates savings is worse than no card.
-- **Paraphrase.** Never copy text or code from a source verbatim; write original minimal examples and cite the source in the Source field.
+- **Stay faithful.** Keep wording, values, and code examples as close to the source as possible; copying verbatim is fine. Prefer the source's own example over an invented equivalent. Only the schema fields (Kind, Hint, routing) are ours to impose.
 - Cards are self-contained (no "see card X") and at most ~18 lines.
