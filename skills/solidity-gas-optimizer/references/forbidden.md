@@ -4,7 +4,6 @@ Techniques the optimizer must never apply: seven are contest-only techniques tha
 
 ## FBD-01 · Never smuggle inputs through gas price or msg.value
 - **Kind**: advisory
-- **Tier**: C
 - **Detect**: logic reads `tx.gasprice` or `msg.value` as a data input rather than for fee/payment purposes; functions taking fewer parameters than their logic clearly consumes
 - **Hint**: tx.gasprice or msg.value used as data
 - **Transform**: pass values as ordinary function parameters in calldata
@@ -15,7 +14,6 @@ Techniques the optimizer must never apply: seven are contest-only techniques tha
 
 ## FBD-02 · Never branch on manipulated block environment values
 - **Kind**: advisory
-- **Tier**: C
 - **Detect**: control flow keyed on `block.coinbase`, `block.number`, or similar environment opcodes used as a covert configuration channel
 - **Hint**: logic keyed on coinbase or block fields
 - **Transform**: drive behavior from explicit parameters, storage flags, or access control
@@ -26,7 +24,6 @@ Techniques the optimizer must never apply: seven are contest-only techniques tha
 
 ## FBD-03 · Never use gasleft() as a control-flow signal
 - **Kind**: advisory
-- **Tier**: C
 - **Detect**: `gasleft()` compared against thresholds to exit loops early or to select between code paths later in execution
 - **Hint**: gasleft() thresholds steering loops or branches
 - **Transform**: use an explicit loop counter, iteration bound, or state flag
@@ -37,7 +34,6 @@ Techniques the optimizer must never apply: seven are contest-only techniques tha
 
 ## FBD-04 · Never ignore the return value of send()
 - **Kind**: advisory
-- **Tier**: C
 - **Detect**: `payable(addr).send(amount)` used as a statement with the boolean result discarded; any ether transfer whose failure path is unhandled
 - **Hint**: send() result discarded, failure path unhandled
 - **Transform**: use `call{value: amount}("")` and require success, or prefer a pull-payment pattern; avoid `send()`/`transfer()` entirely because of the 2300-gas stipend
@@ -48,7 +44,6 @@ Techniques the optimizer must never apply: seven are contest-only techniques tha
 
 ## FBD-05 · Never mark functions payable just to save gas
 - **Kind**: advisory
-- **Tier**: C
 - **Detect**: `payable` on functions with no legitimate reason to receive ether, typically justified by a gas comment
 - **Hint**: payable on functions not meant for ether
 - **Transform**: keep non-ether functions non-payable; restricting `payable` to constructors and admin-only functions is the acceptable variant, since deployers and admins are trusted with far more than stray ether
@@ -59,7 +54,6 @@ Techniques the optimizer must never apply: seven are contest-only techniques tha
 
 ## FBD-06 · Never take jump destinations from calldata
 - **Kind**: advisory
-- **Tier**: C
 - **Detect**: assembly performing `JUMP` to an offset supplied in calldata; dispatch that replaces the standard 4-byte selector with a caller-provided code pointer
 - **Hint**: assembly JUMP to caller-supplied offset
 - **Transform**: use normal Solidity function dispatch through the compiler-generated selector table
@@ -70,7 +64,6 @@ Techniques the optimizer must never apply: seven are contest-only techniques tha
 
 ## FBD-07 · Never append hand-written bytecode subroutines to a contract
 - **Kind**: advisory
-- **Tier**: C
 - **Detect**: raw bytecode blobs placed after the compiler-generated runtime code (or in the metadata region) and reached by jumping out of and back into Solidity-emitted code, typically for hot routines like custom hash functions
 - **Hint**: raw bytecode appended after runtime code
 - **Transform**: deploy the optimized routine as a separate contract and call it, or write it in reviewed inline assembly/Yul inside normal compiled code
@@ -81,7 +74,6 @@ Techniques the optimizer must never apply: seven are contest-only techniques tha
 
 ## FBD-08 · Do not change public to external for gas
 - **Kind**: advisory
-- **Tier**: C
 - **Detect**: visibility flipped from `public` to `external` with a gas-saving justification in the diff, comment, or review note
 - **Hint**: visibility flip justified by gas savings
 - **Transform**: choose visibility by API intent alone: `external` when the function is never called internally (clarity), `public` when it is
@@ -92,7 +84,6 @@ Techniques the optimizer must never apply: seven are contest-only techniques tha
 
 ## FBD-09 · Do not rewrite > 0 as != 0 for gas
 - **Kind**: advisory
-- **Tier**: C
 - **Detect**: unsigned comparisons `x > 0` swapped to `x != 0` (or the reverse) with a gas rationale
 - **Hint**: unsigned zero-check swapped citing gas
 - **Transform**: keep whichever comparison reads most naturally for the invariant being expressed

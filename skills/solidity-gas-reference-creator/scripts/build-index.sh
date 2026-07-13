@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Generates the technique index (INDEX.md) from the category files, so the index
 # can never drift from the cards. Cards are the source of truth: the ID and title
-# come from each card heading, the remaining columns from its Kind/Tier/Hint fields,
+# come from each card heading, the remaining columns from its Kind/Hint fields,
 # and the category table from the lead clause (up to the first colon) of each
 # category file's header, so keep that clause a self-contained summary.
 # Never edit INDEX.md by hand.
@@ -22,7 +22,7 @@ total=$(cat "${files[@]/#/$dir/}" | grep -c '^## ')
   echo
   echo "Procedurally generated from the category files by \`build-index.sh\`; do not edit by hand."
   echo
-  echo "The scan checklist: one row per technique, $total total. Each ID links to the category file holding the full card. Read this file in full when scanning; open a category file only when a Detect hint matches the code under review. Kind and tier semantics are defined in the audit skill's Reference catalog section and in the card spec."
+  echo "The scan checklist: one row per technique, $total total. Each ID links to the category file holding the full card. Read this file in full when scanning; open a category file only when a Detect hint matches the code under review. Kind semantics are defined in the audit skill's Reference catalog section and in the card spec."
   echo
   echo "## Categories"
   echo
@@ -38,14 +38,13 @@ total=$(cat "${files[@]/#/$dir/}" | grep -c '^## ')
   echo
   echo "## Techniques"
   echo
-  echo "| ID | Technique | Kind | Tier | Detect hint |"
-  echo "|----|-----------|------|------|-------------|"
+  echo "| ID | Technique | Kind | Detect hint |"
+  echo "|----|-----------|------|-------------|"
   for f in "${files[@]}"; do
     awk -v file="$f" '
-      function emit() { if (id != "") printf "| [%s](%s) | %s | %s | %s | %s |\n", id, file, title, kind, tier, hint }
-      /^## /              { emit(); id=$2; title=$0; sub(/^## [A-Z]+-[0-9]+ · /, "", title); kind=tier=hint="" ; next }
+      function emit() { if (id != "") printf "| [%s](%s) | %s | %s | %s |\n", id, file, title, kind, hint }
+      /^## /              { emit(); id=$2; title=$0; sub(/^## [A-Z]+-[0-9]+ · /, "", title); kind=hint="" ; next }
       /^- \*\*Kind\*\*: / { kind=substr($0, 13) }
-      /^- \*\*Tier\*\*: / { tier=substr($0, 13) }
       /^- \*\*Hint\*\*: / { hint=substr($0, 13); gsub(/\|/, "\\|", hint) }
       END                 { emit() }
     ' "$dir/$f"

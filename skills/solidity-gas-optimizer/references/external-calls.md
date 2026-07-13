@@ -4,7 +4,6 @@ Techniques that change how contracts call each other: replacing pull-based flows
 
 ## XC-01 · Prefer token transfer hooks over pull-based deposits
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: deposit flows built on `approve` followed by `transferFrom(msg.sender, address(this), ...)`; a receiving contract that itself initiates the token transfer and then handles the resulting receive callback.
 - **Hint**: approve plus transferFrom-to-this deposit flow
 - **Transform**: have the user call the token directly with a hook-capable transfer (ERC-1155 transfers, ERC-721 `safeTransferFrom`/`safeMint`, ERC-1363 `transferAndCall`) so the receiving contract reacts inside its `onXReceived` hook; pass any extra parameters through the transfer's `data` bytes and decode them in the hook.
@@ -15,7 +14,6 @@ Techniques that change how contracts call each other: replacing pull-based flows
 
 ## XC-02 · Accept plain ETH via receive/fallback instead of a deposit function
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: `function deposit() external payable` (or similar) whose body only reacts to incoming ETH; integrations that call it with no arguments.
 - **Hint**: payable deposit function only reacting to ETH
 - **Transform**: move the reaction logic into `receive()` so senders can transfer ETH directly with empty calldata; if parameters are needed, accept them as raw bytes in `fallback()` and decode with `abi.decode`.
@@ -26,7 +24,6 @@ Techniques that change how contracts call each other: replacing pull-based flows
 
 ## XC-03 · Use EIP-2930 access-list transactions for cross-contract calls
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: transactions that will touch other contracts, especially proxies and EIP-1167 clones where every call goes through a `delegatecall` (implementation address plus its storage slots are accessed cold); not a source-code pattern, decided at transaction-construction time.
 - **Hint**: cross-contract or proxy calls, tx-construction time
 - **Transform**: build the transaction as type-1/2930 with an access list declaring the addresses and storage keys it will touch, prepaying them at the warm-listed rate.
@@ -37,7 +34,6 @@ Techniques that change how contracts call each other: replacing pull-based flows
 
 ## XC-04 · Cache repeated external call results locally
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: the same external view call (e.g., an oracle price read like Chainlink's latest answer) issued more than once within one function or execution path.
 - **Hint**: same external view call issued twice
 - **Transform**: call once, store the result in a local variable (or pass it down the call stack), and reuse it for every subsequent computation in that execution.
@@ -48,7 +44,6 @@ Techniques that change how contracts call each other: replacing pull-based flows
 
 ## XC-05 · Add multicall batching to router-style contracts
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: periphery or router contracts whose users routinely submit several transactions in sequence (approve-then-act flows, multi-step position management) and which expose no `multicall(bytes[] calldata)`-style batch entry point.
 - **Hint**: router without bytes-array batch entry point
 - **Transform**: expose a multicall function that loops over encoded call payloads and self-delegatecalls each one, letting users compose a sequence of operations into one transaction, as Uniswap's router and Compound's bulker do.
@@ -59,7 +54,6 @@ Techniques that change how contracts call each other: replacing pull-based flows
 
 ## XC-06 · Consolidate architecture to avoid cross-contract calls
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: protocols split across many small contracts that call each other on every hot path; per-transaction traces showing repeated intra-protocol CALL hops.
 - **Hint**: hot paths crossing several protocol contracts
 - **Transform**: merge cooperating contracts into a single monolithic contract (or inherit modules into one deployable) so hot-path interactions become internal jumps instead of external calls.

@@ -4,7 +4,6 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 
 ## ASM-01 · Revert with a string error from assembly
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `require(cond, "...")` or `revert("...")` with a short string literal on a hot path
 - **Hint**: require/revert with short string literal
 - **Transform**: replace the check with an assembly block that, on failure, hand-encodes the `Error(string)` payload in low memory (offset word, length word, message bytes) and calls `revert(ptr, len)`
@@ -14,8 +13,7 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 - **Source**: RareSkills Gas Book, Assembly #1
 
 ## ASM-02 · Make single external calls with hand-rolled calldata in scratch space
-- **Kind**: transform
-- **Tier**: C
+- **Kind**: advisory
 - **Detect**: `IFoo(addr).fn(args)` interface calls where the encoded arguments fit in 64 bytes or memory already holds reusable data
 - **Hint**: interface call with small encoded arguments
 - **Transform**: in assembly, `mstore` the 4-byte selector and arguments into scratch space (or previously used memory), then `call`/`staticcall` directly instead of going through the interface
@@ -26,7 +24,6 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 
 ## ASM-03 · Branchless min/max and similar math primitives
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: ternary comparisons like `x > y ? x : y` or `a < b ? a : b`, hand-rolled min/max/abs helpers
 - **Hint**: ternary comparison selecting between two values
 - **Transform**: replace the conditional with a branchless assembly expression that selects via a comparison flag, e.g. for max:
@@ -42,7 +39,6 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 
 ## ASM-04 · Inequality via SUB or XOR instead of ISZERO(EQ)
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `iszero(eq(a, b))` patterns inside existing assembly blocks
 - **Hint**: iszero(eq(...)) inside assembly blocks
 - **Transform**: use `if sub(a, b) { ... }` (or `xor(a, b)`) as the not-equal condition, since a nonzero difference is truthy, dropping the `ISZERO` opcode
@@ -53,7 +49,6 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 
 ## ASM-05 · Zero-address check in assembly
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `require(addr != address(0), "...")` or `if (addr == address(0)) revert ...` guards
 - **Hint**: require addr != address(0) guards
 - **Transform**: assembly block with `if iszero(addr)` that encodes the revert string in low memory and reverts, skipping Solidity's comparison and revert-string machinery
@@ -64,7 +59,6 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 
 ## ASM-06 · SELFBALANCE instead of address(this).balance
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `address(this).balance` reads
 - **Hint**: address(this).balance reads
 - **Transform**: read the contract's own balance via `selfbalance()` in assembly
@@ -74,8 +68,7 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 - **Source**: RareSkills Gas Book, Assembly #6
 
 ## ASM-07 · Hash or emit up to 96 bytes from scratch space
-- **Kind**: transform
-- **Tier**: C
+- **Kind**: advisory
 - **Detect**: `keccak256(abi.encode(...))` over data totaling <= 96 bytes; `emit` of events with <= 96 bytes of unindexed data
 - **Hint**: keccak256 or emit over three words max
 - **Transform**: `mstore` the words into memory offsets 0x00, 0x20, 0x40 and call `keccak256(0x00, len)` or `log1(0x00, len, topicHash)` directly, instead of letting Solidity ABI-encode at the free memory pointer
@@ -85,8 +78,7 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 - **Source**: RareSkills Gas Book, Assembly #7
 
 ## ASM-08 · Reuse one memory region across multiple external calls
-- **Kind**: transform
-- **Tier**: C
+- **Kind**: advisory
 - **Detect**: two or more external calls in one function, each with arguments encoding to <= 96 bytes
 - **Hint**: multiple external calls in one function
 - **Transform**: encode the first call's selector and arguments in low memory, `call`/`staticcall`, then overwrite only the argument words for each subsequent call, reusing the same region; return data <= 96 bytes can also land in scratch/zero-slot space instead of freshly allocated memory
@@ -96,8 +88,7 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 - **Source**: RareSkills Gas Book, Assembly #8
 
 ## ASM-09 · Reuse memory when deploying multiple contracts
-- **Kind**: transform
-- **Tier**: C
+- **Kind**: advisory
 - **Detect**: two or more `new Contract()` expressions in one function
 - **Hint**: multiple new Contract() in one function
 - **Transform**: load the creation bytecode once, then issue each deployment via `create(value, add(code, 0x20), mload(code))` in assembly; store the returned addresses in scratch space instead of letting Solidity allocate fresh memory per deployment (contract creation behaves like an external call returning 32 bytes)
@@ -108,7 +99,6 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 
 ## ASM-10 · Parity check with a bitmask instead of modulo
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `x % 2 == 0` or `x % 2 == 1` parity tests
 - **Hint**: x % 2 equality comparisons
 - **Transform**: test the lowest bit instead: `x & 1 == 0` for even, `x & 1 == 1` for odd; the last binary digit fully determines parity since every higher bit contributes an even amount

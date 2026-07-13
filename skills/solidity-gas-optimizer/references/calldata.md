@@ -4,7 +4,6 @@ Techniques that shrink transaction calldata or make it cheaper to consume: zero-
 
 ## CD-01 · Mine leading-zero addresses for frequently passed contracts
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: contract addresses that recur as function arguments on high-volume call paths (routers, tokens, marketplaces referenced in integrators' calldata); deployments using plain CREATE where a CREATE2 salt search would be feasible.
 - **Hint**: address arguments recurring in hot call paths
 - **Transform**: deploy-time tooling, not a code diff: brute-force a CREATE2 salt until the resulting address has several leading zero bytes, so every later call that passes that address as an argument carries cheaper calldata.
@@ -15,7 +14,6 @@ Techniques that shrink transaction calldata or make it cheaper to consume: zero-
 
 ## CD-02 · Prefer unsigned types in external parameters
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: `int`/`intN` parameters on external or public functions, especially where callers routinely pass small negative values; grep for `int` types inside function signatures.
 - **Hint**: signed int params on external functions
 - **Transform**: at interface-design time, model the value as unsigned where the domain allows: carry magnitude plus a direction flag, or add a fixed bias so the whole range is nonnegative. Never retrofit a released function, since changing the type changes the selector.
@@ -26,7 +24,6 @@ Techniques that shrink transaction calldata or make it cheaper to consume: zero-
 
 ## CD-03 · Take unmodified reference parameters as calldata
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: external or public functions declaring `bytes memory`, `string memory`, or array/struct `memory` parameters that are never written inside the function; grep for `memory` in external function signatures.
 - **Hint**: memory params never written, external functions
 - **Transform**: change the parameter's data location from `memory` to `calldata`.
@@ -37,7 +34,6 @@ Techniques that shrink transaction calldata or make it cheaper to consume: zero-
 
 ## CD-04 · Design packed non-ABI calldata for data-heavy L2 functions
 - **Kind**: advisory
-- **Tier**: C
 - **Detect**: functions with long lists of small-valued parameters, each padded to a full 32-byte word by ABI encoding; L2 contracts whose dominant cost is data posting.
 - **Hint**: many small padded params, L2 data costs
 - **Transform**: ground-up design decision, never a retrofit: define an application-specific byte layout (tight widths, implicit fields), receive it through `fallback` or a single raw `bytes` argument, and decode by hand on-chain. The compiler packs storage this way automatically but never packs ABI-encoded calldata, so the layout and decoder must be hand-built.

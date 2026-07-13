@@ -22,16 +22,15 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 ## Reference catalog
 
-`references/INDEX.md` lists every technique: ID, kind, tier, detect hint. Read INDEX.md in full at scan time. Open a category file (`references/storage.md` etc.) only when its hints match the code under review. Never scan from memory alone; walk the checklist.
+`references/INDEX.md` lists every technique: ID, kind, detect hint. Read INDEX.md in full at scan time. Open a category file (`references/storage.md` etc.) only when its hints match the code under review. Never scan from memory alone; walk the checklist.
 
-- **Kind** `transform` = applicable as a local diff, enters the verify loop. `advisory` = design-level, goes straight to the report as a labeled estimate.
-- **Tier** is a cost prior, not a merge permission. `A` = no meaningful complexity cost: apply and keep on the work branch when it measures an improvement. `B` = real tradeoff: apply and measure, flagged for explicit review. `C` = never apply; report only. Every surviving change, A or B, gets a tradeoff verdict in Phase 5 and merges only by human decision; tiers decide what the run may attempt and where reviewers spend attention.
+- **Kind** `transform` = mechanically applicable as a local diff; enters the verify loop, then the Phase 5 challenge. `advisory` = reported as a labeled estimate, never applied by the run: design-level changes that are not a local diff, and techniques that must not be applied mechanically (security hazards, deprecated mechanics, API or storage-layout breakers, contest-only cleverness). Every applied change gets a tradeoff verdict in Phase 5 and merges only by human decision.
 
 ## Phase 0: Discover
 
 1. Run `scripts/detect-toolchain.sh <repo-root>`. It reports the framework, test commands, measurement commands, and compiler settings, and exits nonzero when the repo cannot be measured (unsupported toolchain, missing `forge`, or Hardhat without `hardhat-gas-reporter`). Nonzero exit means the prerequisites are not met: stop and report what is missing.
 2. Choose the measurement tool per target, not per repo: find where the target's tests actually live. A repo-wide Foundry preference is wrong when the target is only covered by Hardhat tests, and vice versa. For Hardhat, read the config to learn how the gas reporter is enabled (`REPORT_GAS`, a `GAS` yargs env option, or a config flag); do not assume the env var name.
-3. Read the target repo's CLAUDE.md, GUIDELINES/CONTRIBUTING, and `.claude/gas-policy.md` if present. The gas-policy file is the project's declared policy; its schema is `templates/gas-policy.md`. Apply its tier adjustments and hard constraints (a storage-layout freeze makes packing Tier C; an assembly-averse style guide demotes all ASM cards), and carry its context weighting and noise threshold into Phase 5. Record the active policy in the report.
+3. Read the target repo's CLAUDE.md, GUIDELINES/CONTRIBUTING, and `.claude/gas-policy.md` if present. The gas-policy file is the project's declared policy; its schema is `templates/gas-policy.md`. Apply its hard constraints and any report-only reclassifications (a storage-layout freeze makes packing report-only; an assembly-averse style guide makes all ASM cards report-only), and carry its context weighting and noise threshold into Phase 5. Record the active policy in the report.
 4. Fix scope: the files the user named, otherwise the main contracts directory. List the files explicitly before starting.
 
 ## Phase 1: Baseline
@@ -44,8 +43,8 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 1. Read `references/INDEX.md`.
 2. For each in-scope file, walk all eight category checklists against the code. When a Detect hint matches, open the category file and check the card's full Preconditions before recording a candidate.
-3. Record candidates as `{card ID, location, why it applies, estimated impact, kind, tier after policy}`.
-4. Tier C candidates and advisory cards skip Phase 3 and go straight to the report.
+3. Record candidates as `{card ID, location, why it applies, estimated impact, kind after policy}`.
+4. Advisory candidates (including any the policy reclassified to report-only) skip Phase 3 and go straight to the report.
 5. Order transform candidates by expected value: hot paths and per-call savings before deploy-only and cold paths.
 
 ## Phase 3: Verify loop
@@ -56,15 +55,15 @@ Work on a dedicated branch (`gas/<scope>`). For each transform candidate, strict
 2. Compile, then run targeted tests: test files matching the contract name, plus any test file that imports or deploys the contract (grep the test directory). Failing tests mean either a bad application or a real behavior change; retry once, then revert and record.
 3. Measure with `scripts/gas-compare.sh` against the baseline. Record the deployment/code-size delta alongside the runtime delta: bigger code is a real cost, and for internal-function libraries it lands in every consumer contract.
 4. If the improvement is above noise (single-digit deltas are noise), run the project's formatter and linter on the touched file, then commit as `gas: <CARD-ID> <file>: <summary> (<delta>)`. If the measurement is flat or a regression, revert and record. If a pre-commit hook fails for reasons that provably predate and are unrelated to the staged change (e.g. the user's dirty working tree), commit with `--no-verify` and record that in the report.
-5. Tier B survivors stay on the branch flagged for explicit review; never present a survivor as settled. The merge decision is the team's for every finding.
+5. Every surviving change stays on the branch for explicit review; never present a survivor as settled. The merge decision is the team's for every finding.
 
 After the last candidate, run the **full** suite once. If it fails, bisect the kept commits to find the interaction and drop the offender. Keep the loop serial: interleaved candidates corrupt gas attribution.
 
 ## Phase 4: Report
 
-Fill `templates/report.md` and write it as `gas-report-<target>-<date>.md`, untracked (never commit it unless asked). Resolve the output directory in this order: (1) a location the user named in the request; (2) otherwise, the `reports/` directory at the root of this skill's own repository (two levels up from this skill's directory), creating it if absent. Do not default to the audited repo's root. The report is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered `GAS-<H|M|L>-NN` (severity in the ID, numbered within each severity), ordered by severity. Include all four populations: applied-and-measured, team-decision (Tier B survivors), advisory, and rejected with their measured evidence.
+Fill `templates/report.md` and write it as `gas-report-<target>-<date>.md`, untracked (never commit it unless asked). Resolve the output directory in this order: (1) a location the user named in the request; (2) otherwise, the `reports/` directory at the root of this skill's own repository (two levels up from this skill's directory), creating it if absent. Do not default to the audited repo's root. The report is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered `GAS-<H|M|L>-NN` (severity in the ID, numbered within each severity), ordered by severity. Include all four populations: applied-and-measured, team-decision, advisory, and rejected with their measured evidence.
 
-Severity (impact axis, orthogonal to tier):
+Severity (impact axis):
 
 - **High**: ≥500 gas per call on a hot user path, ≥5% of a function's cost, or ≥10k deploy gas on factory/clone-deployed contracts.
 - **Medium**: 100–500 gas per call on regular paths.

@@ -4,7 +4,6 @@ Local codegen and execution-cost techniques that stay in plain Solidity: compari
 
 ## EXE-01 · Prefer strict comparisons
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: `<=` or `>=` in conditions, especially hot paths; grep `>=` and `<=` inside `if (`/`require(`
 - **Hint**: `<=` or `>=` in conditions
 - **Transform**: where integer semantics allow, restate the bound strictly, e.g. `x >= 1` becomes `x > 0`
@@ -15,7 +14,6 @@ Local codegen and execution-cost techniques that stay in plain Solidity: compari
 
 ## EXE-02 · Split conjunctive require statements
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: `&&` inside `require(`
 - **Hint**: `&&` inside `require(`
 - **Transform**: one `require` per conjunct, preserving the original left-to-right order
@@ -26,18 +24,16 @@ Local codegen and execution-cost techniques that stay in plain Solidity: compari
 
 ## EXE-03 · Split disjunctive revert conditions
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `if (` with `||` guarding a single `revert SomeError()`
 - **Hint**: `||` guarding a single revert
 - **Transform**: one `if`/`revert` per condition, optionally with a distinct custom error for each cause
 - **Savings**: avoids evaluating the second condition once the first fires and removes boolean-combination codegen
 - **Preconditions**: conditions are independent and side-effect-free; benchmark both shapes
-- **Risks**: introducing new error types changes the contract's revert ABI; integrators and tests matching the old selector break. Tier B because the external error surface moves
+- **Risks**: introducing new error types changes the contract's revert ABI; integrators and tests matching the old selector break.
 - **Source**: RareSkills Gas Book, Compiler-related #3
 
 ## EXE-04 · Use named return variables
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: `returns (type)` without a name plus an explicit `return expr;` in the body
 - **Hint**: anonymous `returns` plus explicit `return`
 - **Transform**: name the return variable in the signature and assign to it instead of using `return`
@@ -48,7 +44,6 @@ Local codegen and execution-cost techniques that stay in plain Solidity: compari
 
 ## EXE-05 · Swap branches to remove a negation
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: `if (!` followed by an `else` block
 - **Hint**: `if (!` with an `else`
 - **Transform**: test the positive condition and exchange the two branch bodies
@@ -59,7 +54,6 @@ Local codegen and execution-cost techniques that stay in plain Solidity: compari
 
 ## EXE-06 · Pre-increment instead of post-increment
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: `i++` or `i--` as a standalone statement, typically in loop headers
 - **Hint**: standalone `i++` or `i--`
 - **Transform**: replace with `++i` / `--i`
@@ -70,7 +64,6 @@ Local codegen and execution-cost techniques that stay in plain Solidity: compari
 
 ## EXE-07 · Use unchecked arithmetic where overflow is impossible
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: arithmetic on values with natural bounds: loop counters below a limit, inputs already range-validated, monotonic counters incremented by small steps
 - **Hint**: naturally bounded arithmetic, loop counters
 - **Transform**: wrap the operation in an `unchecked { ... }` block
@@ -81,7 +74,6 @@ Local codegen and execution-cost techniques that stay in plain Solidity: compari
 
 ## EXE-08 · Gas-optimal loop counter pattern
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: `for (uint256 i = 0; i < n; i++)` on solc older than 0.8.22
 - **Hint**: conventional for-loop, solc below 0.8.22
 - **Transform**: default-initialize the counter, move the increment into the body as `unchecked { ++i; }`
@@ -92,7 +84,6 @@ Local codegen and execution-cost techniques that stay in plain Solidity: compari
 
 ## EXE-09 · Do-while instead of for
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `for` loops in gas-critical paths
 - **Hint**: for-loops in gas-critical paths
 - **Transform**: guard the zero-iteration case, then loop with `do { ... } while (cond);`
@@ -110,7 +101,6 @@ do {
 
 ## EXE-10 · Default to uint256 unless packing
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: standalone state variables or locals typed `uint8`/`uint16`/.../`uint128` or `bool` that share no slot with neighbors
 - **Hint**: unpacked sub-word integer or bool
 - **Transform**: widen to `uint256` when the smaller width serves no packing purpose
@@ -121,7 +111,6 @@ do {
 
 ## EXE-11 · Order short-circuit operands deliberately
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `||` / `&&` chains where the first operand is expensive (storage read, external call, hash) and the second is cheap, or where operand likelihood is known
 - **Hint**: expensive first operand in boolean chain
 - **Transform**: for `||`, put the operand most likely to be true first; for `&&`, put the one most likely to be false first; when likelihoods are unknown, put the cheaper operand first
@@ -132,7 +121,6 @@ do {
 
 ## EXE-12 · Avoid public visibility on state variables
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: `public` state variables, especially constants only humans need to read
 - **Hint**: `public` variables without on-chain readers
 - **Transform**: declare `private`/`internal` when no on-chain caller needs the value
@@ -143,7 +131,6 @@ do {
 
 ## EXE-13 · Set a high optimizer runs value for hot contracts
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: `runs: 200` (or similarly low) in compiler settings for a frequently called contract
 - **Hint**: low `runs` on frequently called contract
 - **Transform**: raise the `runs` parameter (e.g. to a very large value) in the optimizer config
@@ -154,7 +141,6 @@ do {
 
 ## EXE-14 · Mine low-value selectors for hot functions
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: frequently called external functions whose 4-byte selectors have no leading zero bytes
 - **Hint**: hot functions with non-zero-leading selectors
 - **Transform**: append a mined suffix to the function name (tooling exists to search suffixes) until the selector starts with zero bytes and sorts low
@@ -165,7 +151,6 @@ do {
 
 ## EXE-15 · Shift instead of multiplying or dividing by powers of two
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `* 2`, `/ 4`, `* 2 ** n`, or division/multiplication by any literal power of two on unsigned values
 - **Hint**: mul/div by literal power of two
 - **Transform**: replace `x * 2**n` with `x << n` and `x / 2**n` with `x >> n`
@@ -176,7 +161,6 @@ do {
 
 ## EXE-16 · Consider caching calldata values in locals
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: repeated reads of the same calldata slot inside a loop, e.g. `arr.length` or `arr[i]` referenced multiple times
 - **Hint**: repeated calldata reads inside loops
 - **Transform**: copy the value into a local variable once and read the local thereafter
@@ -187,7 +171,6 @@ do {
 
 ## EXE-17 · Branchless code and loop unrolling
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: hot paths dense with conditionals; tight loops where the jump overhead rivals the body cost
 - **Hint**: conditional-dense hot paths, tight loops
 - **Transform**: replace conditionals with equivalent arithmetic/bitwise expressions; partially unroll loops (e.g. process two elements per iteration to halve the jump count)
@@ -198,7 +181,6 @@ do {
 
 ## EXE-18 · Inline internal functions with a single caller
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `internal`/`private` function referenced from exactly one call site
 - **Hint**: internal function with one caller
 - **Transform**: move the body into the caller and delete the function
@@ -209,7 +191,6 @@ do {
 
 ## EXE-19 · Compare long arrays and strings by hash
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: element-by-element equality loops over `bytes`, `string`, or arrays longer than 32 bytes
 - **Hint**: element-wise equality loops over bytes
 - **Transform**: hash both sides and compare the digests
@@ -225,7 +206,6 @@ function equal(bytes memory a, bytes memory b) internal pure returns (bool) {
 
 ## EXE-20 · Precomputed tables for powers and logarithms
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: on-chain computation of fractional powers, roots, or logarithms where the base or the exponent is fixed
 - **Hint**: on-chain fractional power or log math
 - **Transform**: precompute results (or curve segments) off-chain and ship them as a constant lookup table; interpolate or combine entries at runtime. Production fixed-point math in AMM and bonding-curve code uses this pattern
@@ -236,7 +216,6 @@ function equal(bytes memory a, bytes memory b) internal pure returns (bool) {
 
 ## EXE-21 · Use precompiles for big-number and memory work
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: modular exponentiation or large modular multiplication implemented in Solidity; large memory-copy loops
 - **Hint**: Solidity modexp or bulk memory copies
 - **Transform**: call the modexp precompile (address 0x05) for big modular arithmetic, or the identity precompile (0x04) for bulk memory copies
@@ -247,7 +226,6 @@ function equal(bytes memory a, bytes memory b) internal pure returns (bool) {
 
 ## EXE-22 · Chain multiplications instead of small constant exponents
 - **Kind**: transform
-- **Tier**: A
 - **Detect**: `** 2`, `** 3`, or similar small-constant exponents on the `**` operator
 - **Hint**: `**` with small constant exponent
 - **Transform**: expand to repeated multiplication, e.g. `n ** 3` becomes `n * n * n`

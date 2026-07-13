@@ -4,7 +4,6 @@ System-level design decisions: which contracts, token standards, execution layer
 
 ## ARC-01 · Batch operations behind a self-delegatecall multicall
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: frontends or users issuing several sequential transactions to one contract (approve-then-act flows, multi-step config); no batch entry point in the ABI.
 - **Hint**: multiple sequential txs to one contract
 - **Transform**: expose a `multicall(bytes[] calldata)` that loops over payloads and delegatecalls each into the contract itself, so N operations share one transaction while keeping the original `msg.sender` and `msg.value`.
@@ -15,7 +14,6 @@ System-level design decisions: which contracts, token standards, execution layer
 
 ## ARC-02 · Prefer signer-issued signatures over Merkle proofs for allowlists
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: claim/mint functions taking `bytes32[] proof` parameters; proof length (and calldata cost) growing with participant count.
 - **Hint**: claim functions taking bytes32[] proof
 - **Transform**: have an off-chain signer authorize each address; the claimant submits a fixed ~65-byte signature checked with `ecrecover` instead of a proof of 32 bytes per tree level.
@@ -26,7 +24,6 @@ System-level design decisions: which contracts, token standards, execution layer
 
 ## ARC-03 · Use ERC20Permit to fuse approval and spend into one transaction
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: two-transaction UX where users call `approve` and then a contract calls `transferFrom`; protocols requiring pre-set allowances.
 - **Hint**: separate approve then transferFrom transactions
 - **Transform**: support EIP-2612: the holder signs an approval off-chain and the spender (or any relayer) submits `permit` plus the spend in a single transaction.
@@ -37,7 +34,6 @@ System-level design decisions: which contracts, token standards, execution layer
 
 ## ARC-04 · Move high-frequency, low-value activity to an L2
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: games, ticketing, or micro-transactions executing frequent small state changes directly on L1; per-action fees exceeding the value moved.
 - **Hint**: frequent low-value state changes on L1
 - **Transform**: keep canonical assets on L1, bridge them via message passing to a rollup or sidechain, run the interaction loop there, and settle final outcomes or withdrawals back.
@@ -48,7 +44,6 @@ System-level design decisions: which contracts, token standards, execution layer
 
 ## ARC-05 · Use state channels for repeated interactions between fixed parties
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: a small, known participant set exchanging many rapid moves (turn-based games, streaming micropayments) as individual on-chain transactions.
 - **Hint**: fixed parties exchanging many on-chain moves
 - **Transform**: participants escrow assets in a channel contract, exchange mutually signed state updates off-chain, and post only the final state; a dishonest party's own latest signature lets the honest side force settlement on-chain.
@@ -59,7 +54,6 @@ System-level design decisions: which contracts, token standards, execution layer
 
 ## ARC-06 · Reduce governance transactions through vote delegation
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: governance where each holder casts an on-chain vote per proposal; ERC20Votes-style tokens with checkpointing on transfer.
 - **Hint**: every holder votes on-chain per proposal
 - **Transform**: adopt delegation (ERC20Votes / ERC-5805): holders assign voting power once and only delegates submit vote transactions, shrinking the total number of votes cast per proposal.
@@ -70,7 +64,6 @@ System-level design decisions: which contracts, token standards, execution layer
 
 ## ARC-07 · Model NFTs as ERC-1155 ids instead of ERC-721
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: ERC-721 collections whose `balanceOf` is never consumed on-chain; mint- or transfer-heavy drops paying double storage writes.
 - **Hint**: ERC-721 with unused balanceOf
 - **Transform**: issue tokens as ERC-1155 ids capped at supply one; a single `balances[id][owner]` slot then encodes both ownership and balance, whereas ERC-721 writes a per-token owner slot and a per-owner balance slot on every mint and transfer.
@@ -81,7 +74,6 @@ System-level design decisions: which contracts, token standards, execution layer
 
 ## ARC-08 · Deploy one multi-token contract instead of many ERC-20s
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: a factory spawning an ERC-20 contract per market, vault share, or series.
 - **Hint**: factory deploying ERC-20 per market
 - **Transform**: hold every token class as an id inside a single ERC-1155, or ERC-6909 when the mandatory receiver callbacks are unwanted (ERC-6909, used by Uniswap v4, drops them); each id behaves as an independent fungible balance.
@@ -92,7 +84,6 @@ System-level design decisions: which contracts, token standards, execution layer
 
 ## ARC-09 · Choose UUPS over Transparent proxies to shift gas off users
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: TransparentUpgradeableProxy in front of contracts with frequent user calls; upgradeability pattern still undecided.
 - **Hint**: Transparent proxy with frequent user calls
 - **Transform**: with a Transparent proxy, every incoming call must first test whether the caller is the admin before routing, so all users pay that check on every transaction forever; with UUPS the proxy fallback is a bare delegatecall and the admin check lives only inside the access-controlled upgrade function, so the deployer pays a slightly larger implementation once and only upgrade transactions pay the check.

@@ -19,14 +19,13 @@ Take the next free number in that file. IDs are append-only: never renumber, reu
 
 Each category file opens with a one-paragraph description of what the category covers; its first sentence becomes the category's row in the index, so keep that sentence self-contained.
 
-Note on the seed catalog: cards distilled from the RareSkills article keep the article's ordering inside each category, so a few sit where the tree would not file them today (e.g. a Tier C card under `deployment.md`). Tier, not file location, gates application. The tree governs new additions.
+Note on the seed catalog: cards distilled from the RareSkills article keep the article's ordering inside each category, so a few sit where the tree would not file them today (e.g. an advisory card under `deployment.md`). Kind, not file location, gates application. The tree governs new additions.
 
 ## Schema
 
 ```markdown
 ## <PREFIX>-<NN> · <Short imperative name>
 - **Kind**: transform | advisory
-- **Tier**: A | B | C
 - **Detect**: <concrete code patterns to look for; greppable cues when possible>
 - **Hint**: <the Detect field compressed to one short line; becomes the card's row in the technique index>
 - **Transform**: <the exact change; for advisory cards, the design recommendation>
@@ -38,9 +37,8 @@ Note on the seed catalog: cards distilled from the RareSkills article keep the a
 
 Rules:
 
-- **Kind.** `transform` = mechanically applicable as a local diff, verifiable by tests and measurement. `advisory` = design decision; reported, never auto-applied.
+- **Kind.** `transform` = mechanically applicable as a local diff, verifiable by tests and measurement; enters the verify loop and the Phase 5 challenge. `advisory` = reported as a labeled estimate, never auto-applied. Use `advisory` for design-level changes that are not a local diff, and for techniques that must not be applied mechanically: security hazards, deprecated mechanics, API or storage-layout breakers, and contest-only cleverness.
 - **Hint.** One short line, since the whole index is read at scan time. `INDEX.md` is generated from the cards by `scripts/build-index.sh`; never edit it by hand.
-- **Tier.** A cost prior for the optimizer, not a merge permission (humans decide every merge). `A` = no meaningful readability/auditability/security cost; applied and kept on the work branch when it measures an improvement. `B` = real tradeoff; flagged for explicit team review. `C` = never applied; security hazards, deprecated mechanics, API or storage-layout breakers.
 - **Stay current.** If a technique's validity changed with an EVM upgrade or compiler version, the card must say so in Risks with the EIP or solc version. A card that overstates savings is worse than no card.
 - **Paraphrase.** Never copy text or code from a source verbatim; write original minimal examples and cite the source in the Source field.
 - Cards are self-contained (no "see card X") and at most ~18 lines.

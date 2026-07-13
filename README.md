@@ -2,7 +2,9 @@
 
 **Automated gas optimization for Solidity code.** 
 
-Scans the target against a curated open source gas optimization techniques catalog, implements the optimizations, commits one candidate at a time, verifies the tests pass, measures the real delta, and challenges each optimization candidate with an adversarial tradeoff analysis. The deliverable is an audit-style report plus a work branch for humans to cherry-pick from. Every candidate is decided by the target project's own tests and measurements, not the model's judgment.
+Scans the target against a curated open source gas optimization techniques catalog, implements the optimizations, commits one candidate at a time, verifies the tests pass, measures the real delta, and challenges each optimization candidate with an adversarial tradeoff analysis. 
+
+The deliverable is an audit-style report plus a work branch for humans to cherry-pick from. Every candidate is decided by the target project's own tests and measurements, not the model's judgment.
 
 ## Prerequisites
 
@@ -11,16 +13,16 @@ Scans the target against a curated open source gas optimization techniques catal
 
 ## How a run works
 
-| Phase | What happens | Stops when |
-|-------|--------------|------------|
-| 0 Discover | Detect toolchain, compiler settings, gas policy | Cannot measure |
-| 1 Baseline | Full test suite + gas snapshot | Tests red |
-| 2 Scan | Walk code against `references/INDEX.md` | |
-| 3 Verify | One candidate per commit: targeted tests, measure, keep or revert | |
-| 4 Report | Severity-ranked report with measured deltas, negatives included | |
-| 5 Challenge | Fresh-context analyzer argues against every finding | |
+| Phase | What happens |
+|-------|--------------|
+| 0 Discover | Detect toolchain, compiler settings, gas policy |
+| 1 Baseline | Full test suite + gas snapshot |
+| 2 Scan | Walk code against `references/INDEX.md` |
+| 3 Verify | One candidate per commit: targeted tests, measure, keep or revert |
+| 4 Report | Severity-ranked report with measured deltas, negatives included |
+| 5 Challenge | Fresh-context analyzer argues against every finding |
 
-Every finding ends with a verdict (`recommend` / `team-decision` / `reject`) and a measured delta; humans decide every merge. Tiers gate what the skill may attempt: A = no cost, B = real tradeoff, C = never applied.
+Every finding ends with a verdict (`recommend` / `team-decision` / `reject`) and a measured delta; humans decide every merge.
 
 ## Install and use
 
@@ -37,9 +39,9 @@ Then ask Claude Code:
 
 ## Target policy
 
-The skills carry target-neutral defaults: the technique catalog and a general, orienting tradeoff rubric. A project declares what it values over raw gas in a `.claude/gas-policy.md` at its repo root, and both skills read it as an extension of their defaults: the defaults orient, the policy specializes them with the project's specifics. Without the file, the defaults apply on their own.
+Each project values an optimization against readability differently, so the tradeoff is a per-project call. The skills ship target-neutral defaults; a project extends them with its own `.claude/gas-policy.md` at the repo root, which specializes the defaults where it speaks and leaves them in force elsewhere.
 
-The policy states hard constraints (a storage-layout freeze, API stability, assembly-restricted paths), tier adjustments that promote or demote catalog techniques for the project, the target chains and hot paths that weight the analysis, and the measurement-noise threshold. Copy [`skills/solidity-gas-optimizer/templates/gas-policy.md`](./skills/solidity-gas-optimizer/templates/gas-policy.md) to `.claude/gas-policy.md` and delete the sections that do not apply; each field is documented in place.
+The policy states hard constraints (storage-layout freeze, API stability, assembly-restricted paths), catalog techniques the project keeps report-only, the target chains and hot paths that weight the analysis, and the measurement-noise threshold. Copy [`skills/solidity-gas-optimizer/templates/gas-policy.md`](./skills/solidity-gas-optimizer/templates/gas-policy.md) to `.claude/gas-policy.md` and delete what does not apply; each field is documented in place.
 
 ## Layout
 

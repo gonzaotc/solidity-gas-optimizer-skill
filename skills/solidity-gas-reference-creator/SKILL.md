@@ -18,12 +18,12 @@ Turn a technique description into a validated card in the reference catalog. `re
 
 ## Steps
 
-1. **Read the spec.** Read `references/card-spec.md` in full: card schema, routing tree, kind and tier rules.
+1. **Read the spec.** Read `references/card-spec.md` in full: card schema, routing tree, kind rules.
 2. **Deduplicate.** State the technique's mechanism in one sentence: the EVM or compiler behavior that produces the saving, not the technique's name. Search `INDEX.md` for the mechanism's keywords, then read every category file with related cards.
    - If an existing card covers the same mechanism, stop. Report the card ID, the overlap in one sentence ("duplicate of ST-02: both cache storage reads to avoid repeated SLOADs"), and what, if anything, the new material adds. If it adds a precondition, risk, or updated measurement, apply that as an edit to the existing card (no new ID) and continue at step 6.
    - If the mechanism is new, continue.
 3. **Route and number.** Walk the routing tree top to bottom; first match wins. Take the next free ID in that category file.
-4. **Write the card.** Fill every field of the schema, following the spec's rules on kind, tier, hint, currency, and length.
+4. **Write the card.** Fill every field of the schema, following the spec's rules on kind, hint, currency, and length.
 5. **Update the catalog files.**
    - Regenerate the index: run `scripts/build-index.sh`. It rewrites `INDEX.md` from the cards; never edit it by hand.
    - If distilled from a publication, add the item-to-card mapping to `SOURCES.md`. For an original contribution, cite "original contribution" in the Source field and leave `SOURCES.md` unchanged.

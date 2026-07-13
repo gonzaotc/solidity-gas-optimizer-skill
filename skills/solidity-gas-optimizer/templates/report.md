@@ -39,7 +39,7 @@ Each finding reads top to bottom: what the code does, why it can be optimized, t
 
 {{One line on what changed and why the saving follows.}}
 
-**Why you might not.** {{The cost: readability, auditability, security, maintainability, or compatibility. For a Tier A idiom with no meaningful cost, say so.}}
+**Why you might not.** {{The cost: readability, auditability, security, maintainability, or compatibility. For a safe idiom with no meaningful cost, say so.}}
 
 **Recommendation.** {{recommend / team-decision / reject}} for this context. {{Analyzer rationale, verbatim.}}
 

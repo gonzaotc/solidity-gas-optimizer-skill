@@ -4,7 +4,6 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 
 ## DEP-01 · Precompute CREATE addresses to break circular dependencies
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: two contracts that each need the other's address; a storage variable holding a peer contract address plus a post-deploy setter (`function setX(address …)`) instead of a constructor argument
 - **Hint**: peer-address setter plus storage variable
 - **Transform**: compute the future CREATE address from deployer address + nonce (RLP derivation, e.g. Solady's `LibRLP`), pass it as a constructor arg into an `immutable`, and delete the setter and storage slot; assert the predicted address matches after deployment
@@ -15,7 +14,6 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 
 ## DEP-02 · Make constructors payable
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `constructor(` declarations without the `payable` keyword
 - **Hint**: constructor without payable keyword
 - **Transform**: add `payable` to the constructor
@@ -26,7 +24,6 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 
 ## DEP-03 · Strip or zero-optimize the CBOR metadata hash
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: compiler config without `metadata: { appendCBOR: false }` (CLI `--no-cbor-metadata`); deployed bytecode ending in a CBOR blob (`a26469706673…` tail)
 - **Hint**: bytecode CBOR tail, no appendCBOR:false
 - **Transform**: disable metadata appending in compiler settings; alternatively keep the metadata but grind source comments until the resulting IPFS hash contains more zero bytes
@@ -36,8 +33,7 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Source**: RareSkills Gas Book, Deployment #3
 
 ## DEP-04 · Selfdestruct at the end of a one-shot deployer constructor
-- **Kind**: transform
-- **Tier**: C
+- **Kind**: advisory
 - **Detect**: `selfdestruct(` inside a constructor; deployer contracts whose entire job runs in the constructor (batch-creating other contracts in one transaction)
 - **Hint**: selfdestruct inside constructor body
 - **Transform**: do not apply. Historically: call `selfdestruct` as the constructor's last step so the helper contract leaves no account behind
@@ -48,7 +44,6 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 
 ## DEP-05 · Weigh modifiers against internal functions
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: a `modifier` applied to three or more functions; conversely, repeated internal guard calls at function entry
 - **Hint**: modifier reused across three-plus functions
 - **Transform**: design choice: a modifier's body is inlined at every use site, while an internal function exists once and is reached via jumps; pick modifiers when per-call runtime cost dominates, internal functions when deployment cost or code size dominates
@@ -59,7 +54,6 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 
 ## DEP-06 · Deploy repeated contracts as clones or metaproxies
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: factories running `new SomeContract(...)` many times with identical logic; protocols spawning per-user or per-market instances of the same code
 - **Hint**: factory repeatedly deploying identical contracts with `new`
 - **Transform**: deploy the logic once, then stamp out EIP-1167 minimal proxies (or EIP-3448 metaproxies when per-instance data is needed) that delegatecall into it
@@ -70,7 +64,6 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 
 ## DEP-07 · Mark admin-only functions payable
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `onlyOwner`/role-gated external functions declared without `payable`
 - **Hint**: onlyOwner functions lacking payable
 - **Transform**: add `payable` to functions callable only by trusted admins
@@ -81,7 +74,6 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 
 ## DEP-08 · Replace require strings with custom errors
 - **Kind**: transform
-- **Tier**: B
 - **Detect**: `require(cond, "…")` and `revert("…")` with string literals
 - **Hint**: require or revert with string literal
 - **Transform**: declare `error SomethingWrong();` and revert with it (`if (!cond) revert SomethingWrong();`, or `require(cond, SomethingWrong())` on recent compilers)
@@ -92,7 +84,6 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 
 ## DEP-09 · Reuse a canonical CREATE2 factory
 - **Kind**: advisory
-- **Tier**: B
 - **Detect**: a project deploying its own CREATE2 deployer/factory contract when it merely needs a deterministic address
 - **Hint**: project ships its own deployer factory
 - **Transform**: deploy through an already-deployed deterministic-deployment factory (e.g. the proxy Foundry uses at 0x4e59b44847b379578588920cA78FbF26c0B4956C, Safe Singleton Factory, or CreateX) instead of shipping your own

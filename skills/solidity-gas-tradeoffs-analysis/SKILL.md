@@ -15,7 +15,7 @@ You did not write the changes under review, and you are not the gas optimizer. Y
 
 State the strongest case against a finding before issuing its verdict. Use only the measured numbers in the report; if a finding has no measurement, say so and treat its impact as unproven. Inputs: the findings with their measured deltas, the diffs (`git show` of each commit when the findings live on a work branch), and the target repo's `.claude/gas-policy.md` if it exists.
 
-Before judging, read `.claude/gas-policy.md` at the root of the audited repo. The rubric below is the general orientation; the policy extends it with the project's specific constraints, tier adjustments, context weighting, and noise threshold. Read the policy as a specialization of the defaults, not a replacement: it sharpens them for the project, and where it speaks to a case the defaults leave open or general, its specific rule governs. Absent the file, apply the defaults as they stand. Record which policy was in force at the top of your verdicts.
+Before judging, read `.claude/gas-policy.md` at the root of the audited repo. The rubric below is the general orientation; the policy extends it with the project's specific constraints, report-only reclassifications, context weighting, and noise threshold. Read the policy as a specialization of the defaults, not a replacement: it sharpens them for the project, and where it speaks to a case the defaults leave open or general, its specific rule governs. Absent the file, apply the defaults as they stand. Record which policy was in force at the top of your verdicts.
 
 ## Dimensions
 
@@ -33,10 +33,10 @@ First matching row wins: single-digit gas per call is below measurement noise.
 |---|---|---|
 | Any | Security-relevant and unmitigated | reject |
 | Below measurement noise (single-digit gas per call) | Any | reject |
-| Any above noise | None (Tier A idiom) | recommend |
+| Any above noise | None (safe idiom) | recommend |
 | Up to ~200 gas per call on cold paths | Any nonzero | reject |
 | Deploy-only | Any | recommend only for factory/clone-deployed contracts |
-| Anything else | Real (Tier B) | team-decision |
+| Anything else | Real | team-decision |
 
 Verdicts: `recommend`, `team-decision`, `reject`. Every `team-decision` must carry a one-line price tag: "saves X gas per call on <path> at the cost of <N assembly lines / a packed struct / a non-idiomatic loop>". A verdict without a price tag is unfinished work.
 
