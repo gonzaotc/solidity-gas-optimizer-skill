@@ -62,7 +62,7 @@ After the last candidate, run the **full** suite once. If it fails, bisect the k
 
 ## Phase 4: Report
 
-Fill `templates/report.md` and write it to `<repo-root>/gas-report-<target>-<date>.md`, untracked (never commit it unless asked). The report is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered GAS-01… ordered by severity. Include all four populations: applied-and-measured, team-decision (Tier B survivors), advisory, and rejected with their measured evidence.
+Fill `templates/report.md` and write it as `gas-report-<target>-<date>.md`, untracked (never commit it unless asked). Resolve the output directory in this order: (1) a location the user named in the request; (2) otherwise, the `reports/` directory at the root of this skill's own repository (two levels up from this skill's directory), creating it if absent. Do not default to the audited repo's root. The report is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered GAS-01… ordered by severity. Include all four populations: applied-and-measured, team-decision (Tier B survivors), advisory, and rejected with their measured evidence.
 
 Severity (impact axis, orthogonal to tier):
 
