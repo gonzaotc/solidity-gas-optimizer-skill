@@ -2,7 +2,7 @@
 
 **Automated gas optimization for Solidity code.** 
 
-Scans against a curated open source gas optimization techniques catalog, commits one candidate at a time, verifies the tests pass, measures the real delta, and challenges each candidate with an adversarial tradeoff analysis. The deliverable is an audit-style report plus a work branch for humans to cherry-pick from. Every candidate is decided by the target project's own tests and measurements, not the model's judgment.
+Scans the target against a curated open source gas optimization techniques catalog, implements the optimizations, commits one candidate at a time, verifies the tests pass, measures the real delta, and challenges each optimization candidate with an adversarial tradeoff analysis. The deliverable is an audit-style report plus a work branch for humans to cherry-pick from. Every candidate is decided by the target project's own tests and measurements, not the model's judgment.
 
 ## Prerequisites
 
@@ -29,11 +29,11 @@ $ git clone <this repo>
 $ ln -s "$(pwd)/solidity-gas-optimizer/skills/"* ~/.claude/skills/
 ```
 
-Installs the three skills globally. To scope them to one project, copy the folders into its `.claude/skills/` instead, keeping `solidity-gas-optimizer` and `solidity-gas-tradeoffs-analysis` together, since the challenge reads the latter from its sibling directory. Then ask Claude Code:
+Installs all three skills globally: `solidity-gas-optimizer` (the audit), `solidity-gas-tradeoffs-analysis` (the challenge), and `solidity-gas-reference-creator` (catalog upkeep). 
+
+Then ask Claude Code:
 
 > "Run a gas audit on `src/Vault.sol`."
-> "Is packing this struct worth the readability cost?"
-> "Challenge the findings in `gas-report-vault-2026-07-09.md`."
 
 ## Target policy
 
@@ -62,10 +62,7 @@ skills/
 
 To add a technique card, use the `solidity-gas-reference-creator` skill; [CONTRIBUTING.md](./CONTRIBUTING.md) covers the process, the by-hand path, and skill improvements.
 
-## Provenance
-
-Seed catalog distilled (paraphrased, cited per card) from the [RareSkills Book of Gas Optimization](https://www.rareskills.io/post/gas-optimization), with post-2023 EVM changes annotated.
-
 ## Roadmap
 
 - Benchmark repo: a fixture codebase of known inefficiencies; comparing two runs' reports shows a PR's effect.
+- Support multi-ai-provider usage: one model for analyzing and other model for tradeoff analysis.
