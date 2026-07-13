@@ -22,15 +22,15 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 ## Reference catalog
 
-`references/INDEX.md` lists every technique: ID, kind, detect hint. Read INDEX.md in full at scan time. Open a category file (`references/storage.md` etc.) only when its hints match the code under review. Never scan from memory alone; walk the checklist.
+`catalog/INDEX.md` lists every technique: ID, kind, detect hint. Read INDEX.md in full at scan time. Open a category file (`catalog/storage.md` etc.) only when its hints match the code under review. Never scan from memory alone; walk the checklist.
 
-- **Kind** (defined in `references/card-spec.md`): `transform` enters the verify loop, then the Phase 5 challenge; `advisory` is reported as a labeled estimate and never applied by the run. Every applied change gets a Phase 5 verdict and merges only by human decision.
+- **Kind**: `transform` enters the verify loop, then the Phase 5 challenge; `advisory` is reported as a labeled estimate and never applied by the run. Every applied change gets a Phase 5 verdict and merges only by human decision. (Full schema: `card-spec.md` in the reference-creator skill.)
 
 ## Phase 0: Discover
 
 1. Run `scripts/detect-toolchain.sh <repo-root>`. It reports the framework, test commands, measurement commands, and compiler settings, and exits nonzero when the repo cannot be measured (unsupported toolchain, missing `forge`, or Hardhat without `hardhat-gas-reporter`). Nonzero exit means the prerequisites are not met: stop and report what is missing.
 2. Choose the measurement tool per target, not per repo: find where the target's tests actually live. A repo-wide Foundry preference is wrong when the target is only covered by Hardhat tests, and vice versa. For Hardhat, read the config to learn how the gas reporter is enabled (`REPORT_GAS`, a `GAS` yargs env option, or a config flag); do not assume the env var name.
-3. Read the target repo's CLAUDE.md, GUIDELINES/CONTRIBUTING, and `.claude/gas-policy.md` if present. The gas-policy file is the project's declared policy; its schema is `templates/gas-policy.md`. Apply its hard constraints and any report-only reclassifications (a storage-layout freeze makes packing report-only; an assembly-averse style guide makes all ASM cards report-only), and carry its context weighting and noise threshold into Phase 5. Record the active policy in the report.
+3. Resolve the gas policy, first match wins: (1) a policy the user named when invoking the skill; (2) the target repo's `.claude/gas-policy.md`, then a `gas-policy.md` at the repo root; (3) the shipped defaults in the tradeoffs skill. Its schema is `templates/gas-policy.md`. Also read the target's CLAUDE.md and GUIDELINES/CONTRIBUTING for constraints. Apply the policy's hard constraints and report-only reclassifications (a storage-layout freeze makes packing report-only; an assembly-averse style makes ASM cards report-only), and carry its context weighting and noise threshold into Phase 5. Record which policy was used in the report.
 4. Fix scope: the files the user named, otherwise the main contracts directory. List the files explicitly before starting.
 
 ## Phase 1: Baseline
@@ -42,12 +42,12 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 ## Phase 2: Scan
 
-1. Read `references/INDEX.md`.
+1. Read `catalog/INDEX.md`.
 2. Scan hottest-first: take the Phase 1 ranking and walk the catalog against the top functions before anything else, since that is where a matched technique repays most. Then sweep the remaining in-scope code against the full INDEX so nothing is missed. When a Detect hint matches, open the category file and check the card's full Preconditions before recording a candidate.
 3. The catalog is the minimum scan set, not a ceiling. If you see a real gas waste with no matching card, record it as an `uncarded` candidate; it earns a finding only by passing the same Phase 3 verify loop and Phase 5 challenge as any card. Never claim a saving from memory without measuring it. Flag survivors for a follow-up card via the reference-creator skill.
 4. Record candidates as `{card ID or "uncarded", location, why it applies, estimated impact, kind after policy}`.
 5. Advisory candidates (including any the policy reclassified to report-only) skip Phase 3 and go straight to the report.
-6. Order transform candidates by expected value before opening cards: hot paths and per-call savings before deploy-only and cold paths.
+6. Order the collected transform candidates for Phase 3 by expected value: hot paths and per-call savings before deploy-only and cold paths.
 
 ## Phase 3: Verify loop
 
@@ -56,7 +56,7 @@ Work on a dedicated branch (`gas/<scope>`). For each transform candidate, strict
 1. Apply the minimal diff for this one card.
 2. Compile, then run targeted tests: test files matching the contract name, plus any test file that imports or deploys the contract (grep the test directory). Failing tests mean either a bad application or a real behavior change; retry once, then revert and record.
 3. Measure with `scripts/gas-compare.sh` against the baseline. Record the deployment/code-size delta alongside the runtime delta: bigger code is a real cost, and for internal-function libraries it lands in every consumer contract.
-4. If the improvement is above noise (single-digit deltas are noise), run the project's formatter and linter on the touched file, then commit as `gas: <CARD-ID> <file>: <summary> (<delta>)`. If the measurement is flat or a regression, revert and record. If a pre-commit hook fails for reasons unrelated to the change, commit with `--no-verify` and note it.
+4. If the improvement is above the policy's noise threshold (default: single-digit gas per call, unless the policy sets otherwise), run the project's formatter and linter on the touched file, then commit as `gas: <CARD-ID> <file>: <summary> (<delta>)`. If the measurement is flat or a regression, revert and record. If a pre-commit hook fails for reasons unrelated to the change, commit with `--no-verify` and note it.
 5. Every surviving change stays on the branch for explicit review; never present a survivor as settled. The merge decision is the team's for every finding.
 
 After the last candidate, run the **full** suite once. If it fails, bisect the kept commits to find the interaction and drop the offender. Keep the loop serial: interleaved candidates corrupt gas attribution.
@@ -73,7 +73,7 @@ Severity (impact axis):
 
 ## Phase 5: Tradeoff challenge
 
-The optimizer must not grade its own work. Spawn a fresh-context agent (Agent tool) and give it: the tradeoff rubric (`../solidity-gas-tradeoffs-analysis/SKILL.md`), the target repo's `.claude/gas-policy.md` if present, the draft report, and the diffs (`git show` of each kept commit). Its job is to argue against each finding first, then issue `recommend` / `team-decision` / `reject` verdicts, each with a price tag. Merge its verdicts and rationale into the report verbatim; do not soften them. For `reject`, revert that commit and move the finding to the rejected table with the analyzer's reason.
+The optimizer must not grade its own work. Spawn a fresh-context agent (Agent tool) and give it: the tradeoff rubric (`../solidity-gas-tradeoffs-analysis/SKILL.md`), the gas policy resolved in Phase 0, the draft report, and the diffs (`git show` of each kept commit). Its job is to argue against each finding first, then issue `recommend` / `team-decision` / `reject` verdicts, each with a price tag. Merge its verdicts and rationale into the report verbatim; do not soften them. For `reject`, revert that commit and move the finding to the rejected table with the analyzer's reason.
 
 If no Agent tool is available, do the challenge in a separate pass: re-read `../solidity-gas-tradeoffs-analysis/SKILL.md`, adopt the skeptic role, and write the case against each finding before issuing any verdict.
 

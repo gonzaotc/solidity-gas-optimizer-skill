@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PR gate for the technique catalog in skills/solidity-gas-optimizer/references/.
+# PR gate for the technique catalog in skills/solidity-gas-optimizer/catalog/.
 # Checks that every card is well-formed:
 #   - card IDs are unique across all category files
 #   - every category file is registered in the prefix map below
@@ -10,7 +10,7 @@
 # It does not cross-check SOURCES.md mappings against the cards.
 # Prints per-file card counts; exits nonzero on any violation. Run from anywhere.
 set -uo pipefail
-dir="$(cd "$(dirname "$0")/../../solidity-gas-optimizer/references" && pwd)"
+dir="$(cd "$(dirname "$0")/../../solidity-gas-optimizer/catalog" && pwd)"
 fail=0
 
 declare -A prefixes=(

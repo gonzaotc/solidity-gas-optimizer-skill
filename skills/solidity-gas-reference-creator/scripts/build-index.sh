@@ -9,7 +9,7 @@
 #   --check  regenerate to a temp file and diff against INDEX.md; exits nonzero
 #            when the index is stale. Run by validate-references.sh as a PR gate.
 set -euo pipefail
-dir="$(cd "$(dirname "$0")/../../solidity-gas-optimizer/references" && pwd)"
+dir="$(cd "$(dirname "$0")/../../solidity-gas-optimizer/catalog" && pwd)"
 files=(storage.md deployment.md external-calls.md architecture.md calldata.md assembly.md execution.md forbidden.md)
 
 tmp="$(mktemp)"

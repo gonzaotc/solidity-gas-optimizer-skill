@@ -8,7 +8,7 @@
 | Toolchain | {{framework}}, solc {{version}}, optimizer runs {{runs}}, via-IR {{bool}} |
 | Baseline | tests green @ {{commit}}, snapshot {{path}} |
 | Work branch | {{branch}} |
-| Active policy | {{repo gas policy constraints, or "defaults"}} |
+| Active policy | {{resolved gas policy: the path used, or "defaults"}} |
 
 ## Summary
 

@@ -1,6 +1,6 @@
 # Card spec
 
-The authoritative spec for catalog cards: routing, IDs, and the schema. The catalog lives in `skills/solidity-gas-optimizer/references/`: one file per category, one card per technique. Cards are data; keep opinions in `skills/solidity-gas-tradeoffs-analysis/SKILL.md`.
+The authoritative spec for catalog cards: routing, IDs, and the schema. The catalog lives in `skills/solidity-gas-optimizer/catalog/`: one file per category, one card per technique. Cards are data; keep opinions in `skills/solidity-gas-tradeoffs-analysis/SKILL.md`.
 
 ## Routing
 

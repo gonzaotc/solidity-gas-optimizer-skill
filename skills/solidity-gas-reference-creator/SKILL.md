@@ -7,7 +7,7 @@ argument-hint: "[technique description: the change, why it saves gas, and the so
 
 # Gas Reference Creator
 
-Turn a technique description into a validated card in the reference catalog. `references/card-spec.md` is the authoritative spec for the card schema, the routing tree, and the catalog rules; this skill automates that process and enforces its gates. Paths below are relative to this skill's directory: the catalog lives in `../solidity-gas-optimizer/references/`.
+Turn a technique description into a validated card in the reference catalog. `references/card-spec.md` is the authoritative spec for the card schema, the routing tree, and the catalog rules; this skill automates that process and enforces its gates. Paths below are relative to this skill's directory: the catalog lives in `../solidity-gas-optimizer/catalog/`.
 
 ## Non-negotiables
 
