@@ -1,0 +1,6 @@
+# Local working copies of source articles; verbatim source text is never committed.
+temp/
+
+# OS / editor
+.DS_Store
+*.swp

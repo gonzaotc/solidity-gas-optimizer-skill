@@ -1,4 +1,4 @@
-# Gas Optimization Report — {{scope}}
+# Gas Optimization Report: {{scope}}
 
 | | |
 |---|---|
@@ -26,11 +26,11 @@ Severity is impact (High/Medium/Low per the skill rubric). Verdict comes from th
 - **Measured**: {{before}} → {{after}} ({{delta}}) via {{method}}
 - **Tests**: {{targeted suites run}}; full suite {{status}}; touched lines covered: {{yes/no}}
 - **Change**: {{commit ref or diff summary}}
-- **Tradeoff analysis**: {{verdict}} — {{analyzer rationale, verbatim}}
+- **Tradeoff analysis**: {{verdict}}; {{analyzer rationale, verbatim}}
 
 ## Advisory findings
 
-Design-level opportunities that cannot be applied as a local diff. Estimates, not measurements.
+Design-level opportunities that cannot be applied as a local diff. Estimates, not measurements. Each suggestion opens with "Consider" and carries the reason.
 
 | Card | Suggestion | Est. impact | Cost / consideration |
 |------|------------|-------------|-----------------------|

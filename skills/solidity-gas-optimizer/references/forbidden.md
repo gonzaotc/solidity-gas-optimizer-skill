@@ -1,14 +1,15 @@
 # Forbidden and outdated (FBD)
 
-Techniques the optimizer must never apply: seven are contest-only tricks that are unsafe in production, and two are obsolete micro-optimizations that no longer save gas on modern solc 0.8.x. They are cataloged so they can be flagged in code review and never re-proposed.
+Techniques the optimizer must never apply: seven are contest-only techniques that are unsafe in production, and two are obsolete micro-optimizations that no longer save gas on modern solc 0.8.x. They are cataloged so they can be flagged in code review and never re-proposed.
 
 ## FBD-01 · Never smuggle inputs through gas price or msg.value
 - **Kind**: advisory
 - **Tier**: C
 - **Detect**: logic reads `tx.gasprice` or `msg.value` as a data input rather than for fee/payment purposes; functions taking fewer parameters than their logic clearly consumes
+- **Hint**: tx.gasprice or msg.value used as data
 - **Transform**: pass values as ordinary function parameters in calldata
 - **Savings**: skips calldata costs (4 gas per zero byte, 16 per nonzero, roughly 128+ gas per word-sized argument) by encoding the number in a transaction field the caller sets anyway
-- **Preconditions**: only viable in a gas-golfing harness where ether is free and the test controls the effective gas price
+- **Preconditions**: only viable in a gas-optimization contest harness where ether is free and the test controls the effective gas price
 - **Risks**: on a real network, encoding data in `msg.value` spends actual ether per call, and a data-chosen gas price either overpays or makes the transaction unattractive to include; the "input" channel is also unauthenticated and observable
 - **Source**: RareSkills Gas Book, Dangerous techniques #1
 
@@ -16,6 +17,7 @@ Techniques the optimizer must never apply: seven are contest-only tricks that ar
 - **Kind**: advisory
 - **Tier**: C
 - **Detect**: control flow keyed on `block.coinbase`, `block.number`, or similar environment opcodes used as a covert configuration channel
+- **Hint**: logic keyed on coinbase or block fields
 - **Transform**: drive behavior from explicit parameters, storage flags, or access control
 - **Savings**: environment opcodes cost only 2 gas, cheaper than passing an equivalent calldata argument
 - **Preconditions**: works only when a test framework lets the author dictate block fields; a contest-only side channel
@@ -26,6 +28,7 @@ Techniques the optimizer must never apply: seven are contest-only tricks that ar
 - **Kind**: advisory
 - **Tier**: C
 - **Detect**: `gasleft()` compared against thresholds to exit loops early or to select between code paths later in execution
+- **Hint**: gasleft() thresholds steering loops or branches
 - **Transform**: use an explicit loop counter, iteration bound, or state flag
 - **Savings**: the gas counter decreases as a side effect of execution, so reading it provides a "free" progress indicator without maintaining a counter
 - **Preconditions**: requires the exact gas cost of every executed opcode to be known and permanently stable
@@ -36,6 +39,7 @@ Techniques the optimizer must never apply: seven are contest-only tricks that ar
 - **Kind**: advisory
 - **Tier**: C
 - **Detect**: `payable(addr).send(amount)` used as a statement with the boolean result discarded; any ether transfer whose failure path is unhandled
+- **Hint**: send() result discarded, failure path unhandled
 - **Transform**: use `call{value: amount}("")` and require success, or prefer a pull-payment pattern; avoid `send()`/`transfer()` entirely because of the 2300-gas stipend
 - **Savings**: `send()` omits the revert-on-failure opcodes that `transfer()` emits, and dropping the success check removes a few more, so the happy path is marginally cheaper
 - **Preconditions**: only "safe" if every recipient is guaranteed to accept ether within 2300 gas, forever
@@ -46,6 +50,7 @@ Techniques the optimizer must never apply: seven are contest-only tricks that ar
 - **Kind**: advisory
 - **Tier**: C
 - **Detect**: `payable` on functions with no legitimate reason to receive ether, typically justified by a gas comment
+- **Hint**: payable on functions not meant for ether
 - **Transform**: keep non-ether functions non-payable; restricting `payable` to constructors and admin-only functions is the acceptable variant, since deployers and admins are trusted with far more than stray ether
 - **Savings**: removes the compiler-inserted `msg.value == 0` guard, a handful of opcodes per external call
 - **Preconditions**: contest-only, where accidentally attached ether has no consequence
@@ -56,6 +61,7 @@ Techniques the optimizer must never apply: seven are contest-only tricks that ar
 - **Kind**: advisory
 - **Tier**: C
 - **Detect**: assembly performing `JUMP` to an offset supplied in calldata; dispatch that replaces the standard 4-byte selector with a caller-provided code pointer
+- **Hint**: assembly JUMP to caller-supplied offset
 - **Transform**: use normal Solidity function dispatch through the compiler-generated selector table
 - **Savings**: shrinks the effective selector to a single byte and skips the linear jump-table comparison sequence on every call
 - **Preconditions**: every `JUMPDEST` in the bytecode audited as safe to enter directly, and all callers fully trusted
@@ -66,6 +72,7 @@ Techniques the optimizer must never apply: seven are contest-only tricks that ar
 - **Kind**: advisory
 - **Tier**: C
 - **Detect**: raw bytecode blobs placed after the compiler-generated runtime code (or in the metadata region) and reached by jumping out of and back into Solidity-emitted code, typically for hot routines like custom hash functions
+- **Hint**: raw bytecode appended after runtime code
 - **Transform**: deploy the optimized routine as a separate contract and call it, or write it in reviewed inline assembly/Yul inside normal compiled code
 - **Savings**: avoids the per-call account access cost of an external contract, 2600 gas cold or 100 warm under EIP-2929, on computation-heavy inner loops
 - **Preconditions**: hand-verified bytecode plus a compiler version and settings frozen forever, since any output change shifts the jump offsets
@@ -76,6 +83,7 @@ Techniques the optimizer must never apply: seven are contest-only tricks that ar
 - **Kind**: advisory
 - **Tier**: C
 - **Detect**: visibility flipped from `public` to `external` with a gas-saving justification in the diff, comment, or review note
+- **Hint**: visibility flip justified by gas savings
 - **Transform**: choose visibility by API intent alone: `external` when the function is never called internally (clarity), `public` when it is
 - **Savings**: claimed savings date from old compilers, where `public` functions copied their arguments into memory while `external` ones read calldata directly
 - **Preconditions**: none on any supported compiler
@@ -86,6 +94,7 @@ Techniques the optimizer must never apply: seven are contest-only tricks that ar
 - **Kind**: advisory
 - **Tier**: C
 - **Detect**: unsigned comparisons `x > 0` swapped to `x != 0` (or the reverse) with a gas rationale
+- **Hint**: unsigned zero-check swapped citing gas
 - **Transform**: keep whichever comparison reads most naturally for the invariant being expressed
 - **Savings**: claimed to drop one comparison opcode's worth of gas per check on very old compilers
 - **Preconditions**: only measurable on legacy compilers, roughly pre-0.8.12; benchmark before applying even there

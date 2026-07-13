@@ -1,10 +1,10 @@
 # Source coverage map
 
-Proof of full coverage of seed sources. Every item of a distilled publication maps to exactly one card. When adding cards from a new source, extend this file; when adding an original card, cite "original contribution" in the card and skip this file.
+Proof of full coverage of seed sources. Every item of a distilled publication maps to exactly one card or to a recorded omission. When adding cards from a new source, extend this file; when adding an original card, cite "original contribution" in the card and skip this file. Retired IDs stay recorded here so they are never reused.
 
 ## RareSkills Book of Gas Optimization
 
-Source: https://www.rareskills.io/post/gas-optimization (84 items, all covered).
+Source: https://www.rareskills.io/post/gas-optimization (84 items; 83 carded, one deliberately omitted).
 
 | Article section | # | Article item (abbreviated) | Card |
 |---|---|---|---|
@@ -46,7 +46,7 @@ Source: https://www.rareskills.io/post/gas-optimization (84 items, all covered).
 | Design patterns | 7 | ERC-1155 over ERC-721 | ARC-07 |
 | Design patterns | 8 | One ERC-1155/ERC-6909 over several ERC-20s | ARC-08 |
 | Design patterns | 9 | UUPS vs Transparent proxy | ARC-09 |
-| Design patterns | 10 | Alternatives to OpenZeppelin | ARC-10 |
+| Design patterns | 10 | Alternatives to OpenZeppelin | deliberately omitted (retired ID ARC-10) |
 | Calldata | 1 | Vanity addresses | CD-01 |
 | Calldata | 2 | Avoid signed integers in calldata | CD-02 |
 | Calldata | 3 | Calldata over memory | CD-03 |

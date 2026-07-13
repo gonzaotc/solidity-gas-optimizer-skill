@@ -6,6 +6,7 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Kind**: advisory
 - **Tier**: B
 - **Detect**: two contracts that each need the other's address; a storage variable holding a peer contract address plus a post-deploy setter (`function setX(address …)`) instead of a constructor argument
+- **Hint**: peer-address setter plus storage variable
 - **Transform**: compute the future CREATE address from deployer address + nonce (RLP derivation, e.g. Solady's `LibRLP`), pass it as a constructor arg into an `immutable`, and delete the setter and storage slot; assert the predicted address matches after deployment
 - **Savings**: article measured ~2k gas per subsequent call, since an `immutable` baked into runtime code replaces a cold SLOAD (2100 gas); also removes the setter's bytecode and its separate setup transaction
 - **Preconditions**: deployer account and its nonce sequence fully controlled during the deploy; a contract's nonce starts at 1 and increments only on contract creation; works from a deploy script, no dedicated deployer contract needed
@@ -16,16 +17,18 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Kind**: transform
 - **Tier**: B
 - **Detect**: `constructor(` declarations without the `payable` keyword
+- **Hint**: constructor without payable keyword
 - **Transform**: add `payable` to the constructor
 - **Savings**: ~200 gas at deployment; the compiler omits the implicit callvalue guard (CALLVALUE/ISZERO/JUMPI plus a revert block) from the init code, so fewer opcodes execute and the deploy transaction carries fewer calldata bytes
 - **Preconditions**: deployment is performed by a privileged, competent party who will not attach ether; not appropriate when inexperienced users deploy the contract themselves
-- **Risks**: ether sent at deployment is silently accepted and stuck unless a withdrawal path exists; reviewers and auditors often flag gratuitous `payable` as a foot-gun, which carries a real perception and audit cost for a tiny one-time saving
+- **Risks**: ether sent at deployment is silently accepted and stuck unless a withdrawal path exists; reviewers and auditors often flag gratuitous `payable` as a hazard, which carries a real perception and audit cost for a small one-time saving
 - **Source**: RareSkills Gas Book, Deployment #2
 
 ## DEP-03 · Strip or zero-optimize the CBOR metadata hash
 - **Kind**: transform
 - **Tier**: B
 - **Detect**: compiler config without `metadata: { appendCBOR: false }` (CLI `--no-cbor-metadata`); deployed bytecode ending in a CBOR blob (`a26469706673…` tail)
+- **Hint**: bytecode CBOR tail, no appendCBOR:false
 - **Transform**: disable metadata appending in compiler settings; alternatively keep the metadata but grind source comments until the resulting IPFS hash contains more zero bytes
 - **Savings**: the compiler normally appends ~51 bytes of metadata; at 200 gas per deposited byte that is >10k gas, plus calldata savings on the deploy transaction (zero bytes are cheaper than nonzero ones)
 - **Preconditions**: acceptable only when full source verification against the metadata hash is not required; the zero-byte-mining variant preserves verifiability at the cost of build-time grinding
@@ -36,6 +39,7 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Kind**: transform
 - **Tier**: C
 - **Detect**: `selfdestruct(` inside a constructor; deployer contracts whose entire job runs in the constructor (batch-creating other contracts in one transaction)
+- **Hint**: selfdestruct inside constructor body
 - **Transform**: do not apply. Historically: call `selfdestruct` as the constructor's last step so the helper contract leaves no account behind
 - **Savings**: the claimed benefit relied on selfdestruct gas refunds, which EIP-3529 (London, 2021) removed; on modern chains the opcode costs 5000 gas and refunds nothing, so the saving no longer exists
 - **Preconditions**: contract must have no purpose beyond its constructor; same-transaction creation and destruction
@@ -46,6 +50,7 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Kind**: advisory
 - **Tier**: B
 - **Detect**: a `modifier` applied to three or more functions; conversely, repeated internal guard calls at function entry
+- **Hint**: modifier reused across three-plus functions
 - **Transform**: design choice: a modifier's body is inlined at every use site, while an internal function exists once and is reached via jumps; pick modifiers when per-call runtime cost dominates, internal functions when deployment cost or code size dominates
 - **Savings**: the article's three-function example deployed ~36k gas cheaper with an internal function (one body instead of three inlined copies, at 200 gas per deposited byte), while each modifier-based call ran a fixed ~24 gas cheaper (no jump out and back)
 - **Preconditions**: the duplication penalty only matters when the guard is reused across several functions; single-use guards cost the same either way
@@ -56,6 +61,7 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Kind**: advisory
 - **Tier**: B
 - **Detect**: factories running `new SomeContract(...)` many times with identical logic; protocols spawning per-user or per-market instances of the same code
+- **Hint**: factory repeatedly deploying identical contracts with `new`
 - **Transform**: deploy the logic once, then stamp out EIP-1167 minimal proxies (or EIP-3448 metaproxies when per-instance data is needed) that delegatecall into it
 - **Savings**: a minimal proxy's runtime code is ~45 bytes, so each instance skips depositing the full contract (200 gas per byte), cutting per-instance deployment from potentially hundreds of thousands of gas to tens of thousands
 - **Preconditions**: instances share (near-)identical logic and are not called frequently: every call pays delegatecall overhead including a cold account access (2600 gas) on first touch, so high-traffic contracts may lose the trade; Gnosis Safe is the canonical example of the pattern paying off
@@ -66,6 +72,7 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Kind**: transform
 - **Tier**: B
 - **Detect**: `onlyOwner`/role-gated external functions declared without `payable`
+- **Hint**: onlyOwner functions lacking payable
 - **Transform**: add `payable` to functions callable only by trusted admins
 - **Savings**: drops the compiler's implicit callvalue check from each such function, saving a handful of gas per call and shaving those opcodes from both creation and runtime bytecode, so the contract is slightly cheaper to deploy
 - **Preconditions**: only for functions restricted to competent, privileged callers who won't attach ether
@@ -76,6 +83,7 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Kind**: transform
 - **Tier**: B
 - **Detect**: `require(cond, "…")` and `revert("…")` with string literals
+- **Hint**: require or revert with string literal
 - **Transform**: declare `error SomethingWrong();` and revert with it (`if (!cond) revert SomethingWrong();`, or `require(cond, SomethingWrong())` on recent compilers)
 - **Savings**: a custom error reverts with just a 4-byte selector, versus the `Error(string)` path that ABI-encodes offset, length, and data (≥64 bytes of memory) and embeds the string literal in the bytecode; result is smaller deployed code (200 gas per byte saved) and a cheaper revert path
 - **Preconditions**: solc ≥0.8.4 for custom errors; `require(cond, CustomError())` needs solc ≥0.8.26 with via-IR, or ≥0.8.27 on the legacy pipeline; savings are largest for long strings ("usually" smaller, per the article)
@@ -86,6 +94,7 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Kind**: advisory
 - **Tier**: B
 - **Detect**: a project deploying its own CREATE2 deployer/factory contract when it merely needs a deterministic address
+- **Hint**: project ships its own deployer factory
 - **Transform**: deploy through an already-deployed deterministic-deployment factory (e.g. the proxy Foundry uses at 0x4e59b44847b379578588920cA78FbF26c0B4956C, Safe Singleton Factory, or CreateX) instead of shipping your own
 - **Savings**: eliminates an entire factory deployment: the 32k CREATE surcharge, 200 gas per byte of factory code deposit, and one transaction's overhead
 - **Preconditions**: a suitable factory must already exist on every target chain; the deterministic address must be acceptable as a function of that factory's address and your salt/init code
