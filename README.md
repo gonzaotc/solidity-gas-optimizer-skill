@@ -1,11 +1,13 @@
 # solidity-gas-optimizer
 
-**Automated gas optimization for Solidity code.** Scans against a curated catalog, commits one candidate at a time, verifies the tests pass, measures the real delta, and challenges each with an adversarial tradeoff analysis. The deliverable is an audit-style report plus a work branch for humans to cherry-pick from. Every candidate is decided by the project's own tests and measurements, not the model's judgment.
+**Automated gas optimization for Solidity code.** 
+
+Scans against a curated open source gas optimization techniques catalog, commits one candidate at a time, verifies the tests pass, measures the real delta, and challenges each candidate with an adversarial tradeoff analysis. The deliverable is an audit-style report plus a work branch for humans to cherry-pick from. Every candidate is decided by the target project's own tests and measurements, not the model's judgment.
 
 ## Prerequisites
 
 - **Foundry or Hardhat.** For Foundry, `forge` on PATH (`forge snapshot` is preferred when both are present); for Hardhat, `hardhat-gas-reporter` installed, which covers only the functions the tests exercise.
-- **A green test suite with good coverage of the target code.** The baseline must pass before any change, and thin coverage lets an optimization alter behavior without failing a test, risking silent bugs.
+- **A thorough passing test suite.** Thin coverage lets an optimization alter behavior without failing a test, risking silent bugs.
 
 ## How a run works
 
@@ -33,6 +35,12 @@ Installs the three skills globally. To scope them to one project, copy the folde
 > "Is packing this struct worth the readability cost?"
 > "Challenge the findings in `gas-report-vault-2026-07-09.md`."
 
+## Target policy
+
+The skills carry target-neutral defaults: the technique catalog and a general, orienting tradeoff rubric. A project declares what it values over raw gas in a `.claude/gas-policy.md` at its repo root, and both skills read it as an extension of their defaults: the defaults orient, the policy specializes them with the project's specifics. Without the file, the defaults apply on their own.
+
+The policy states hard constraints (a storage-layout freeze, API stability, assembly-restricted paths), tier adjustments that promote or demote catalog techniques for the project, the target chains and hot paths that weight the analysis, and the measurement-noise threshold. Copy [`skills/solidity-gas-optimizer/templates/gas-policy.md`](./skills/solidity-gas-optimizer/templates/gas-policy.md) to `.claude/gas-policy.md` and delete the sections that do not apply; each field is documented in place.
+
 ## Layout
 
 ```
@@ -40,10 +48,10 @@ skills/
 ├── solidity-gas-optimizer/       the audit skill
 │   ├── SKILL.md                  the loop and its rules
 │   ├── references/               technique catalog (INDEX.md, SOURCES.md, cards)
-│   ├── templates/report.md       report skeleton
+│   ├── templates/                report skeleton + gas-policy template
 │   └── scripts/                  detection, baseline, compare
 ├── solidity-gas-tradeoffs-analysis/
-│   └── SKILL.md                  adversarial challenge; org policy on tradeoffs
+│   └── SKILL.md                  adversarial challenge; default tradeoff rubric
 └── solidity-gas-reference-creator/
     ├── SKILL.md                  contributes cards: dedup, route, write, validate
     ├── references/card-spec.md   card schema, routing tree, rules

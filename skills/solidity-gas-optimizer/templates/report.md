@@ -12,36 +12,49 @@
 
 ## Summary
 
-| ID | Technique | Location | Severity | Δ gas (measured) | Tests | Verdict |
-|----|-----------|----------|----------|------------------|-------|---------|
+| ID | Technique | Location | Δ gas (measured) | Tests | Verdict |
+|----|-----------|----------|------------------|-------|---------|
+| [GAS-H-01](#gas-h-01) | | | | | |
 
-Severity is impact (High/Medium/Low per the skill rubric). Verdict comes from the tradeoff analysis, never from the optimizer pass.
+Each ID encodes severity (`H`/`M`/`L` per the skill rubric) and links to its finding below. Verdict comes from the tradeoff analysis, never from the optimizer pass.
 
 ## Findings
 
-### GAS-01 · {{title}} ({{card-id}})
+Each finding reads top to bottom: what the code does, why it can be optimized, the proposed change, the reason to hold back, and a recommendation for this context. The header carries the measured facts; the evidence line records how the change was verified. IDs run `GAS-<H|M|L>-NN`, numbered within each severity; give every finding an `<a id="gas-<h|m|l>-NN">` anchor matching its Summary link.
 
-- **Severity**: {{H/M/L}}
-- **Location**: {{file:line}}
-- **Measured**: {{before}} → {{after}} ({{delta}}) via {{method}}
-- **Tests**: {{targeted suites run}}; full suite {{status}}; touched lines covered: {{yes/no}}
-- **Change**: {{commit ref or diff summary}}
-- **Tradeoff analysis**: {{verdict}}; {{analyzer rationale, verbatim}}
+<a id="gas-h-01"></a>
+### GAS-H-01 · {{title}} ({{card-id}})
+
+`{{file:line}}` · **{{before}} → {{after}} ({{delta}})** measured via {{method}}
+
+**What the code does.** {{Plain description of the function or block under review and its role.}}
+
+**How it can be optimized.** {{The inefficiency or the technique that applies, and the mechanism by which it saves gas.}}
+
+**Proposed implementation change.**
+
+```solidity
+{{The actual change: before/after or the diff. Real code, not a description.}}
+```
+
+{{One line on what changed and why the saving follows.}}
+
+**Why you might not.** {{The cost: readability, auditability, security, maintainability, or compatibility. For a Tier A idiom with no meaningful cost, say so.}}
+
+**Recommendation.** {{recommend / team-decision / reject}} for this context. {{Analyzer rationale, verbatim.}}
+
+_Evidence: {{targeted suites run}}; full suite {{status}}; touched lines covered: {{yes/no}}; commit {{ref}}._
 
 ## Advisory findings
 
-Design-level opportunities that cannot be applied as a local diff. Estimates, not measurements. Each suggestion opens with "Consider" and carries the reason.
+Design-level opportunities that cannot be applied as a local diff. Estimates, not measurements.
 
 | Card | Suggestion | Est. impact | Cost / consideration |
 |------|------------|-------------|-----------------------|
 
 ## Rejected candidates
 
-Measured no-gain, regressions, broken tests, or tradeoff-analyzer rejections. Kept so the next run does not repeat them.
+Measured no-gain, regressions, broken tests, or tradeoff-analyzer rejections. 
 
 | Card | Location | Result | Note |
 |------|----------|--------|------|
-
-## Methodology
-
-Baseline and deltas measured with {{tool}}. Numbers are valid only for the compiler settings above. {{hardhat caveat: reporter tables only cover functions the tests exercise, if applicable}}

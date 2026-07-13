@@ -1,6 +1,6 @@
 # Assembly (ASM)
 
-Techniques that require dropping into inline assembly (Yul) to bypass the Solidity compiler's memory management, type checks, or branching codegen. Never assume assembly saves gas by default: benchmark against the plain-Solidity version under your exact compiler settings before adopting any of these.
+Techniques that require dropping into inline assembly (Yul): bypassing the Solidity compiler's memory management, type checks, or branching codegen. Never assume assembly saves gas by default; benchmark against the plain-Solidity version under your exact compiler settings before adopting any of these.
 
 ## ASM-01 · Revert with a string error from assembly
 - **Kind**: transform

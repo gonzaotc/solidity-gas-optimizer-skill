@@ -2,7 +2,8 @@
 # Generates the technique index (INDEX.md) from the category files, so the index
 # can never drift from the cards. Cards are the source of truth: the ID and title
 # come from each card heading, the remaining columns from its Kind/Tier/Hint fields,
-# and the category table from the first sentence of each category file's header.
+# and the category table from the lead clause (up to the first colon) of each
+# category file's header, so keep that clause a self-contained summary.
 # Never edit INDEX.md by hand.
 # Usage: build-index.sh [--check]
 #   --check  regenerate to a temp file and diff against INDEX.md; exits nonzero
@@ -31,7 +32,7 @@ total=$(cat "${files[@]/#/$dir/}" | grep -c '^## ')
   echo "|--------|----------|--------|"
   for f in "${files[@]}"; do
     prefix=$(awk '/^## / { split($2, a, "-"); print a[1]; exit }' "$dir/$f")
-    desc=$(awk 'NR > 1 && NF { print; exit }' "$dir/$f" | sed 's/\([.!?]\) .*/\1/; s/|/\\|/g')
+    desc=$(awk 'NR > 1 && NF { print; exit }' "$dir/$f" | sed 's/:.*//; s/|/\\|/g')
     echo "| $prefix | [$f]($f) | $desc |"
   done
   echo

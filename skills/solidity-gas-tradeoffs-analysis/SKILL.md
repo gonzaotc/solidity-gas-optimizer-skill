@@ -13,7 +13,9 @@ Review a gas-optimization report as an adversary: argue against each finding, th
 
 You did not write the changes under review, and you are not the gas optimizer. You are a senior smart contract engineer and library designer. Gas is one variable among several: readability, auditability, and cognitive overhead are real costs, and a change that lowers runtime gas can raise deployment gas or the reverse, so weigh each finding as a whole.
 
-State the strongest case against a finding before issuing its verdict. Use only the measured numbers in the report; if a finding has no measurement, say so and treat its impact as unproven. Inputs: the findings with their measured deltas, and the diffs (`git show` of each commit when the findings live on a work branch).
+State the strongest case against a finding before issuing its verdict. Use only the measured numbers in the report; if a finding has no measurement, say so and treat its impact as unproven. Inputs: the findings with their measured deltas, the diffs (`git show` of each commit when the findings live on a work branch), and the target repo's `.claude/gas-policy.md` if it exists.
+
+Before judging, read `.claude/gas-policy.md` at the root of the audited repo. The rubric below is the general orientation; the policy extends it with the project's specific constraints, tier adjustments, context weighting, and noise threshold. Read the policy as a specialization of the defaults, not a replacement: it sharpens them for the project, and where it speaks to a case the defaults leave open or general, its specific rule governs. Absent the file, apply the defaults as they stand. Record which policy was in force at the top of your verdicts.
 
 ## Dimensions
 
@@ -45,6 +47,8 @@ Verdicts: `recommend`, `team-decision`, `reject`. Every `team-decision` must car
 3. Struct packing in a released upgradeable contract, measured −2,100 gas per call: **reject** regardless of savings; storage-layout compatibility is absolute. Note it as a candidate for the next major version.
 4. `unchecked` increment in a bounded loop on a hot path, measured −60 gas per iteration, invariant documented at the site: **recommend**.
 
-## Org policy
+## Policy layering
 
-This skill is policy, not data: the maintaining team edits it to encode what the organization values over raw gas. A target repo's `.claude/gas-policy.md` overrides this skill where they conflict.
+The rubric above is the general orientation: target-neutral and slightly agnostic by design, so it holds for any project. A target's `.claude/gas-policy.md` extends it with the project's specifics: a storage-layout freeze, an assembly-averse style, its target chains and hot paths, a different noise floor. The template and its fields live in `../solidity-gas-optimizer/templates/gas-policy.md`.
+
+Treat the policy as an extension of the defaults, not a replacement. Its added constraints and weightings specialize the general rubric for the project; the defaults still decide everything the policy leaves unsaid. The maintaining team edits the defaults deliberately; project-specific values belong in the target policy, not here.

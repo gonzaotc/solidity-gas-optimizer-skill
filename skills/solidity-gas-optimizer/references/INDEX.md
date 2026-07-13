@@ -10,14 +10,14 @@ Orientation for where a technique lives, not a filter: the scan still walks ever
 
 | Prefix | Category | Covers |
 |--------|----------|--------|
-| ST | [storage.md](storage.md) | Techniques that cut the cost of persistent state: fewer SLOAD/SSTORE operations, fewer occupied slots, and cheaper write classes (avoiding zero-to-nonzero transitions). |
-| DEP | [deployment.md](deployment.md) | Techniques whose savings land in the deployment transaction: smaller init/runtime bytecode, cheaper code deposit, or avoided setup transactions. |
-| XC | [external-calls.md](external-calls.md) | Techniques that change how contracts call each other: replacing pull-based flows with hooks, batching, caching, transaction-level warming, and architectural consolidation. |
-| ARC | [architecture.md](architecture.md) | System-level design decisions: which contracts, token standards, execution layers, and upgrade patterns exist at all. |
-| CD | [calldata.md](calldata.md) | Techniques that shrink transaction calldata or make it cheaper to consume: zero-byte-friendly value encodings, leaner argument layouts, and reading inputs in place instead of copying them to memory. |
-| ASM | [assembly.md](assembly.md) | Techniques that require dropping into inline assembly (Yul) to bypass the Solidity compiler's memory management, type checks, or branching codegen. |
-| EXE | [execution.md](execution.md) | Local codegen and execution-cost techniques that stay in plain Solidity: comparison and control-flow shape, arithmetic strength reduction, compiler configuration, and function-dispatch cost. |
-| FBD | [forbidden.md](forbidden.md) | Techniques the optimizer must never apply: seven are contest-only techniques that are unsafe in production, and two are obsolete micro-optimizations that no longer save gas on modern solc 0.8.x. |
+| ST | [storage.md](storage.md) | Techniques that cut the cost of persistent state |
+| DEP | [deployment.md](deployment.md) | Techniques whose savings land in the deployment transaction |
+| XC | [external-calls.md](external-calls.md) | Techniques that change how contracts call each other |
+| ARC | [architecture.md](architecture.md) | System-level design decisions |
+| CD | [calldata.md](calldata.md) | Techniques that shrink transaction calldata or make it cheaper to consume |
+| ASM | [assembly.md](assembly.md) | Techniques that require dropping into inline assembly (Yul) |
+| EXE | [execution.md](execution.md) | Local codegen and execution-cost techniques that stay in plain Solidity |
+| FBD | [forbidden.md](forbidden.md) | Techniques the optimizer must never apply |
 
 ## Techniques
 

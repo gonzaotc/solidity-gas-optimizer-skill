@@ -31,7 +31,7 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 1. Run `scripts/detect-toolchain.sh <repo-root>`. It reports the framework, test commands, measurement commands, and compiler settings, and exits nonzero when the repo cannot be measured (unsupported toolchain, missing `forge`, or Hardhat without `hardhat-gas-reporter`). Nonzero exit means the prerequisites are not met: stop and report what is missing.
 2. Choose the measurement tool per target, not per repo: find where the target's tests actually live. A repo-wide Foundry preference is wrong when the target is only covered by Hardhat tests, and vice versa. For Hardhat, read the config to learn how the gas reporter is enabled (`REPORT_GAS`, a `GAS` yargs env option, or a config flag); do not assume the env var name.
-3. Read the target repo's CLAUDE.md, GUIDELINES/CONTRIBUTING, and `.claude/gas-policy.md` if present. Extract constraints that promote or demote tiers (a storage-layout freeze makes packing Tier C; an assembly-averse style guide demotes all ASM cards). Record the active policy in the report.
+3. Read the target repo's CLAUDE.md, GUIDELINES/CONTRIBUTING, and `.claude/gas-policy.md` if present. The gas-policy file is the project's declared policy; its schema is `templates/gas-policy.md`. Apply its tier adjustments and hard constraints (a storage-layout freeze makes packing Tier C; an assembly-averse style guide demotes all ASM cards), and carry its context weighting and noise threshold into Phase 5. Record the active policy in the report.
 4. Fix scope: the files the user named, otherwise the main contracts directory. List the files explicitly before starting.
 
 ## Phase 1: Baseline
@@ -62,7 +62,7 @@ After the last candidate, run the **full** suite once. If it fails, bisect the k
 
 ## Phase 4: Report
 
-Fill `templates/report.md` and write it as `gas-report-<target>-<date>.md`, untracked (never commit it unless asked). Resolve the output directory in this order: (1) a location the user named in the request; (2) otherwise, the `reports/` directory at the root of this skill's own repository (two levels up from this skill's directory), creating it if absent. Do not default to the audited repo's root. The report is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered GAS-01… ordered by severity. Include all four populations: applied-and-measured, team-decision (Tier B survivors), advisory, and rejected with their measured evidence.
+Fill `templates/report.md` and write it as `gas-report-<target>-<date>.md`, untracked (never commit it unless asked). Resolve the output directory in this order: (1) a location the user named in the request; (2) otherwise, the `reports/` directory at the root of this skill's own repository (two levels up from this skill's directory), creating it if absent. Do not default to the audited repo's root. The report is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered `GAS-<H|M|L>-NN` (severity in the ID, numbered within each severity), ordered by severity. Include all four populations: applied-and-measured, team-decision (Tier B survivors), advisory, and rejected with their measured evidence.
 
 Severity (impact axis, orthogonal to tier):
 
@@ -72,7 +72,7 @@ Severity (impact axis, orthogonal to tier):
 
 ## Phase 5: Tradeoff challenge
 
-The optimizer must not grade its own work. Spawn a fresh-context agent (Agent tool) and give it: the tradeoff rubric (`../solidity-gas-tradeoffs-analysis/SKILL.md`), the draft report, and the diffs (`git show` of each kept commit). Its job is to argue against each finding first, then issue `recommend` / `team-decision` / `reject` verdicts, each with a price tag. Merge its verdicts and rationale into the report verbatim; do not soften them. For `reject`, revert that commit and move the finding to the rejected table with the analyzer's reason.
+The optimizer must not grade its own work. Spawn a fresh-context agent (Agent tool) and give it: the tradeoff rubric (`../solidity-gas-tradeoffs-analysis/SKILL.md`), the target repo's `.claude/gas-policy.md` if present, the draft report, and the diffs (`git show` of each kept commit). Its job is to argue against each finding first, then issue `recommend` / `team-decision` / `reject` verdicts, each with a price tag. Merge its verdicts and rationale into the report verbatim; do not soften them. For `reject`, revert that commit and move the finding to the rejected table with the analyzer's reason.
 
 If no Agent tool is available, do the challenge in a separate pass: re-read `../solidity-gas-tradeoffs-analysis/SKILL.md`, adopt the skeptic role, and write the case against each finding before issuing any verdict.
 
