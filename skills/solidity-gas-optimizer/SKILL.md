@@ -24,7 +24,7 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 `references/INDEX.md` lists every technique: ID, kind, detect hint. Read INDEX.md in full at scan time. Open a category file (`references/storage.md` etc.) only when its hints match the code under review. Never scan from memory alone; walk the checklist.
 
-- **Kind** `transform` = mechanically applicable as a local diff; enters the verify loop, then the Phase 5 challenge. `advisory` = reported as a labeled estimate, never applied by the run: design-level changes that are not a local diff, and techniques that must not be applied mechanically (security hazards, deprecated mechanics, API or storage-layout breakers, contest-only cleverness). Every applied change gets a tradeoff verdict in Phase 5 and merges only by human decision.
+- **Kind** (defined in `references/card-spec.md`): `transform` enters the verify loop, then the Phase 5 challenge; `advisory` is reported as a labeled estimate and never applied by the run. Every applied change gets a Phase 5 verdict and merges only by human decision.
 
 ## Phase 0: Discover
 
@@ -37,15 +37,17 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 1. Run the test suite once; if it fails, stop and report. When the user scopes the audit to specific contracts and nothing else in the repo imports them (verify with a grep), scope the baseline and validation to the target's test files plus a full compile instead of the whole suite, and record the narrowed validation in the report. In large repositories a full-suite run per candidate is prohibitive; a scoped and recorded validation is preferable to a skipped one.
 2. Run `scripts/gas-baseline.sh <framework> <baseline-dir> <repo-root>`. Put the baseline dir in scratch space, never inside the repo. If the baseline command fails, stop; without a baseline there is nothing to measure against.
-3. Note in-scope contracts with weak or missing test coverage; their findings can compile and pass tests but cannot be called measured, and must be labeled accordingly.
+3. From the baseline snapshot, rank the in-scope functions by measured cost (and call frequency where the reporter shows it). This ranking, not the catalog order, drives the scan in Phase 2: gas lives in a few hot functions, so look there first.
+4. Note in-scope contracts with weak or missing test coverage; their findings can compile and pass tests but cannot be called measured, and must be labeled accordingly.
 
 ## Phase 2: Scan
 
 1. Read `references/INDEX.md`.
-2. For each in-scope file, walk all eight category checklists against the code. When a Detect hint matches, open the category file and check the card's full Preconditions before recording a candidate.
-3. Record candidates as `{card ID, location, why it applies, estimated impact, kind after policy}`.
-4. Advisory candidates (including any the policy reclassified to report-only) skip Phase 3 and go straight to the report.
-5. Order transform candidates by expected value: hot paths and per-call savings before deploy-only and cold paths.
+2. Scan hottest-first: take the Phase 1 ranking and walk the catalog against the top functions before anything else, since that is where a matched technique repays most. Then sweep the remaining in-scope code against the full INDEX so nothing is missed. When a Detect hint matches, open the category file and check the card's full Preconditions before recording a candidate.
+3. The catalog is the minimum scan set, not a ceiling. If you see a real gas waste with no matching card, record it as an `uncarded` candidate; it earns a finding only by passing the same Phase 3 verify loop and Phase 5 challenge as any card. Never claim a saving from memory without measuring it. Flag survivors for a follow-up card via the reference-creator skill.
+4. Record candidates as `{card ID or "uncarded", location, why it applies, estimated impact, kind after policy}`.
+5. Advisory candidates (including any the policy reclassified to report-only) skip Phase 3 and go straight to the report.
+6. Order transform candidates by expected value before opening cards: hot paths and per-call savings before deploy-only and cold paths.
 
 ## Phase 3: Verify loop
 
@@ -54,14 +56,14 @@ Work on a dedicated branch (`gas/<scope>`). For each transform candidate, strict
 1. Apply the minimal diff for this one card.
 2. Compile, then run targeted tests: test files matching the contract name, plus any test file that imports or deploys the contract (grep the test directory). Failing tests mean either a bad application or a real behavior change; retry once, then revert and record.
 3. Measure with `scripts/gas-compare.sh` against the baseline. Record the deployment/code-size delta alongside the runtime delta: bigger code is a real cost, and for internal-function libraries it lands in every consumer contract.
-4. If the improvement is above noise (single-digit deltas are noise), run the project's formatter and linter on the touched file, then commit as `gas: <CARD-ID> <file>: <summary> (<delta>)`. If the measurement is flat or a regression, revert and record. If a pre-commit hook fails for reasons that provably predate and are unrelated to the staged change (e.g. the user's dirty working tree), commit with `--no-verify` and record that in the report.
+4. If the improvement is above noise (single-digit deltas are noise), run the project's formatter and linter on the touched file, then commit as `gas: <CARD-ID> <file>: <summary> (<delta>)`. If the measurement is flat or a regression, revert and record. If a pre-commit hook fails for reasons unrelated to the change, commit with `--no-verify` and note it.
 5. Every surviving change stays on the branch for explicit review; never present a survivor as settled. The merge decision is the team's for every finding.
 
 After the last candidate, run the **full** suite once. If it fails, bisect the kept commits to find the interaction and drop the offender. Keep the loop serial: interleaved candidates corrupt gas attribution.
 
 ## Phase 4: Report
 
-Fill `templates/report.md` and write it as `gas-report-<target>-<date>.md`, untracked (never commit it unless asked). Resolve the output directory in this order: (1) a location the user named in the request; (2) otherwise, the `reports/` directory at the root of this skill's own repository (two levels up from this skill's directory), creating it if absent. Do not default to the audited repo's root. The report is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered `GAS-<H|M|L>-NN` (severity in the ID, numbered within each severity), ordered by severity. Include all four populations: applied-and-measured, team-decision, advisory, and rejected with their measured evidence.
+Fill `templates/report.md` and write it as `gas-report-<target>-<date>.md` to the location the user named, otherwise the `reports/` directory at this skill's repo root (created if absent). The report is untracked (never commit it unless asked) and is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered `GAS-<H|M|L>-NN` (severity in the ID, numbered within each severity), ordered by severity. Include all four populations: applied-and-measured, team-decision, advisory, and rejected with their measured evidence.
 
 Severity (impact axis):
 

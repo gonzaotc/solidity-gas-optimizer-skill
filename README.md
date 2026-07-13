@@ -31,7 +31,7 @@ $ git clone <this repo>
 $ ln -s "$(pwd)/solidity-gas-optimizer/skills/"* ~/.claude/skills/
 ```
 
-Installs all three skills globally: `solidity-gas-optimizer` (the audit), `solidity-gas-tradeoffs-analysis` (the challenge), and `solidity-gas-reference-creator` (catalog upkeep). 
+Installs all three skills globally: `solidity-gas-optimizer` (the audit), `solidity-gas-tradeoffs-analysis` (the challenge), and `solidity-gas-reference-creator` (catalog upkeep). Each skill is a self-contained folder of Markdown and scripts, so any agent tool with a skills directory can use them by pointing at these folders, adapting the path to that tool's convention.
 
 Then ask Claude Code:
 
@@ -39,7 +39,7 @@ Then ask Claude Code:
 
 ## Target policy
 
-Each project values an optimization against readability differently, so the tradeoff is a per-project call. The skills ship target-neutral defaults; a project extends them with its own `.claude/gas-policy.md` at the repo root, which specializes the defaults where it speaks and leaves them in force elsewhere.
+Each project values an optimization against readability differently, so the tradeoff is a per-project call. The skills ship target-neutral defaults; a project extends them with a `.claude/gas-policy.md` at its repo root.
 
 The policy states hard constraints (storage-layout freeze, API stability, assembly-restricted paths), catalog techniques the project keeps report-only, the target chains and hot paths that weight the analysis, and the measurement-noise threshold. Copy [`skills/solidity-gas-optimizer/templates/gas-policy.md`](./skills/solidity-gas-optimizer/templates/gas-policy.md) to `.claude/gas-policy.md` and delete what does not apply; each field is documented in place.
 

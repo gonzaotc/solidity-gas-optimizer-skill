@@ -25,7 +25,7 @@ Turn a technique description into a validated card in the reference catalog. `re
 3. **Route and number.** Walk the routing tree top to bottom; first match wins. Take the next free ID in that category file.
 4. **Write the card.** Fill every field of the schema, following the spec's rules on kind, hint, currency, and length.
 5. **Update the catalog files.**
-   - Regenerate the index: run `scripts/build-index.sh`. It rewrites `INDEX.md` from the cards; never edit it by hand.
+   - Regenerate the index: run `scripts/build-index.sh`; it rewrites `INDEX.md` from the cards.
    - If distilled from a publication, add the item-to-card mapping to `SOURCES.md`. For an original contribution, cite "original contribution" in the Source field and leave `SOURCES.md` unchanged.
 6. **Validate.** Run `scripts/validate-references.sh`. Fix every violation it reports; if the card cannot satisfy the schema, revert every file touched and report why.
 

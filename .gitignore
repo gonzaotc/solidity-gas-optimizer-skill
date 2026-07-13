@@ -1,6 +1,9 @@
 # Local working copies of source articles; verbatim source text is never committed.
 temp/
 
+# Generated audit reports; the deliverable is untracked, never committed into this repo.
+reports/
+
 # OS / editor
 .DS_Store
 *.swp
