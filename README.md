@@ -1,8 +1,8 @@
 # solidity-gas-optimizer
 
-**Automated gas optimization for Solidity code.** A skill that scans Solidity code against a curated catalog of gas-optimization techniques, identifies and commits optimization candidates one commit at a time, verifies the test suite passes, measures the real delta, and challenges every candidate with an adversarial tradeoff analysis. The deliverable is an audit-style report plus a work branch from which humans cherry-pick changes.
+**Automated gas optimization for Solidity code.** A skill that scans Solidity code against a curated catalog of gas-optimization techniques, identifies and commits optimization candidates one commit at a time, verifies the test suite passes, measures the real delta, and challenges every optimization candidate with an adversarial tradeoff analysis to suggest if the optimization is worth it. The deliverable is an audit-style report plus a work branch from which humans cherry-pick changes.
 
-The (measure->scan->optimize->validate->measure->commit->challenge) loop is what makes this task a good fit for AI automation: every candidate is decided by the project's own tests and measurements, not by the model's judgment. The verification and tradeoff analysis cut the time an engineer spends identifying and validating optimization opportunities.
+The (measure->optimize->validate->measure) loop is what makes this task a good fit for AI automation: every candidate is decided by the project's own tests and measurements, not by the model's judgment. The verification and tradeoff analysis cut the time an engineer spends identifying and validating optimization opportunities.
 
 ## Prerequisites
 

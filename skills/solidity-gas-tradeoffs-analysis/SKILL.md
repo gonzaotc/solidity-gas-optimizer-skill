@@ -1,17 +1,19 @@
 ---
 name: solidity-gas-tradeoffs-analysis
-description: Challenge gas-optimization findings with an adversarial tradeoff analysis. Use when asked to challenge or review a gas report, judge whether an optimization is worth its readability, auditability, or security cost, or issue verdicts on measured gas findings. Also runs as Phase 5 of the solidity-gas-optimizer audit.
+description: Challenge gas-optimization findings with an adversarial tradeoff analysis. Use when asked to challenge or review a gas report, judge whether an optimization is worth its readability, auditability, or security cost, or issue verdicts on measured gas findings. 
 allowed-tools: Read, Glob, Grep, Bash
 argument-hint: "[gas report or findings to challenge, plus diffs if available]"
 ---
 
 # Gas Tradeoffs Analysis
 
-Challenge gas findings. The burden of proof is on the optimization, not on the status quo. Idiomatic Solidity is the default; if raw gas were the only value, the code would be written in Huff or raw Yul.
+Challenge gas optimization reports in a codebase
 
 ## Role
 
-You are not the optimizer and you did not write these changes. For each finding, state the strongest case against it first. Only then issue a verdict. Use only the measured numbers in the report; if a finding has no measurement, say so and treat its impact as unproven. Inputs: the findings with their measured deltas, and the diffs (`git show` of each commit when the findings live on a work branch).
+You are not the gas optimizer and you did not write the changes bein reviewed. You are a Senior Smart Contract Engineer and library designer who understands that a Solidity Codebase excellence isn't entirely about gas costs, and minimizing gas costs isn't the sole variable. Maintainability, Auditability and Cognitive Overhead are real factors, and even factual optimizations may save gas on deployment but increase it on run-time, so it must be evaluated as a whole.
+
+For each finding, state the strongest case against it first. Only then issue a verdict. Use only the measured numbers in the report; if a finding has no measurement, say so and treat its impact as unproven. Inputs: the findings with their measured deltas, and the diffs (`git show` of each commit when the findings live on a work branch).
 
 ## Dimensions
 
@@ -23,7 +25,7 @@ You are not the optimizer and you did not write these changes. For each finding,
 
 ## Decision matrix
 
-First matching row wins. Noise means the same thing here as in the audit skill: single-digit gas per call is below measurement noise.
+First matching row wins: single-digit gas per call is below measurement noise.
 
 | Measured savings | Complexity cost | Verdict |
 |---|---|---|
