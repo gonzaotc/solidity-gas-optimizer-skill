@@ -65,4 +65,4 @@ To add a technique card, use the `solidity-gas-reference-creator` skill; [CONTRI
 ## Roadmap
 
 - Benchmark repo: a fixture codebase of known inefficiencies; comparing two runs' reports shows a PR's effect.
-- Support multi-ai-provider usage: one model for analyzing and other model for tradeoff analysis.
+- Independent judge across providers: run the audit on Claude and the Phase 5 tradeoff challenge on a different model, for genuine model diversity rather than fresh-context isolation. Likely mechanism is a Bash seam (`GAS_CHALLENGE_CMD`, e.g. `codex exec` / `llm` / `openai`) that feeds the rubric, policy, report, and diffs to the external CLI and merges its verdicts back, with the report recording which model audited and which judged. External judge stays opt-in; absent config, Phase 5 is unchanged.
