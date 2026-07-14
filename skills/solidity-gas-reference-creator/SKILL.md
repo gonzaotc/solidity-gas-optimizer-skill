@@ -26,9 +26,18 @@ Turn a technique description into a validated card in the reference catalog. `re
 4. **Write the card.** Fill every field of the schema, following the spec's rules on kind, hint, currency, and length.
 5. **Update the catalog files.**
    - Regenerate the index: run `scripts/build-index.sh`; it rewrites `INDEX.md` from the cards.
-   - Optionally credit the source: fill the `Source` field and add the item-to-card mapping to `SOURCES.md`. Omit both when the material was pasted with no known source. When adding or extending a source section in `SOURCES.md`, record the date the source was pulled (`Pulled: YYYY-MM-DD`) so a later revision can be diffed against what was carded.
+   - Optionally credit the author in the card's `Source` field; omit it when the material was pasted with no known source. Recording the source across the catalog (`SOURCE-LOG.md`, `SOURCES.md`, README) is covered under Mining a whole source below.
 6. **Validate.** Run `scripts/validate-references.sh`. Fix every violation it reports; if the card cannot satisfy the schema, revert every file touched and report why.
+
+## Mining a whole source
+
+The steps above add one card per new mechanism. Mining a named source (an article, repo, or thread) runs them zero or more times: some items are new, most are usually duplicates. Whatever the outcome, once you finish enumerating and deduping the whole source, record it:
+
+- **Always**, even for a source that produced no card: add one row to `../solidity-gas-optimizer/SOURCE-LOG.md` with the pull date, the count and IDs of any new cards, and a one-line outcome. This is what stops a dry source from being blindly re-mined, so it must run on the all-duplicate path too, not only when a card was added.
+- **Only when the source produced at least one original card**: record its item-to-card mapping in `SOURCES.md` (with `Pulled: YYYY-MM-DD`, so a later revision can be diffed against what was carded) and, for a public source, add a line under "Acknowledged sources" in the top-level README. Sources that added no card stay out of both.
+
+This applies to systematic source mining. A one-off pasted technique with no named source needs none of it; attribution stays optional per non-negotiable 3.
 
 ## Deliverable
 
-The changed files (`<category>.md`, `INDEX.md`, and `SOURCES.md` when applicable), a passing validator, and a short summary: the new card's ID, the routing rationale, and the dedup evidence (which cards were checked and why they do not cover the mechanism). For a rejected duplicate, the overlap report replaces the card.
+The changed files (`<category>.md`, `INDEX.md`, plus `SOURCE-LOG.md` and `SOURCES.md` when a source was mined), a passing validator, and a short summary: the new card's ID, the routing rationale, and the dedup evidence (which cards were checked and why they do not cover the mechanism). For a rejected duplicate, the overlap report replaces the card.

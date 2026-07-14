@@ -1,8 +1,8 @@
-# Source scan log
+# Source log
 
-Every gas-optimization source scanned for the catalog, when it was pulled, and whether it produced at least one original card. Sources that added no card stay recorded here so a dry source is never blindly re-scanned; they are deliberately absent from the acknowledgements in the README and the coverage map in `catalog/SOURCES.md`, which credit only card-contributing sources.
+Every gas-optimization source mined for the catalog, when it was pulled, and whether it produced at least one original card. Sources that added no card stay recorded here so a dry source is never blindly re-mined; they are deliberately absent from the acknowledgements in the README and the coverage map in `catalog/SOURCES.md`, which credit only card-contributing sources.
 
-Listed in scan order.
+Listed in the order they were mined.
 
 | Source | Pulled | New cards | Outcome |
 |--------|--------|-----------|---------|
@@ -13,5 +13,6 @@ Listed in scan order.
 | [OpenZeppelin Forum: A Collection of Gas Optimisation Tricks](https://forum.openzeppelin.com/t/a-collection-of-gas-optimisation-tricks/19966) | 2026-07-14 | 1 | CD-05. 20 posts; the rest are canonical tricks already covered |
 | [harendra-shakya/solidity-gas-optimization](https://github.com/harendra-shakya/solidity-gas-optimization) | 2026-07-14 | 0 | Derivative pre-Berlin prose guide; every trick already carded (Yul section is verbatim transmissions11) |
 | [0xisk/awesome-solidity-gas-optimization](https://github.com/0xisk/awesome-solidity-gas-optimization) | 2026-07-14 | 0 | Link directory. High-yield links (0xmacro cheat sheet, mudit.blog, Polymath/Mudit bytecode article) all map to existing cards; research papers are academic tooling/superoptimization, not source-level techniques |
+| [12 Expert Solidity Gas Optimization Techniques (Hela Labs)](https://helalabs.com/blog/12-expert-solidity-gas-optimization-techniques/) | 2026-07-14 | 0 | Derivative listicle; all 12 map to existing cards (fixed-size types ST-05/EXE-10, cache storage ST-02, calldata CD-03, events ST-16, struct packing ST-03/ST-04, short-circuit EXE-11, bitwise EXE-15). Repeats the debunked "external cheaper than public" claim, carded as FBD-08 |
 
 Per-item coverage for the card-contributing sources is mapped in [`catalog/SOURCES.md`](catalog/SOURCES.md).

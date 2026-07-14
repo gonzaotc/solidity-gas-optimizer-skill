@@ -75,6 +75,7 @@ The skill resolves the policy in order: one you name when invoking it; otherwise
 skills/
 ├── solidity-gas-optimizer/       the audit skill
 │   ├── SKILL.md                  the loop and its rules
+│   ├── SOURCE-LOG.md             every source mined, with date and card outcome
 │   ├── catalog/                  technique catalog (INDEX.md, SOURCES.md, cards)
 │   ├── templates/                report skeleton + gas-policy template
 │   └── scripts/                  detection, baseline, compare
