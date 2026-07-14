@@ -2,7 +2,7 @@
 
 Procedurally generated from the category files by `build-index.sh`; do not edit by hand.
 
-The scan checklist: one row per technique, 83 total. Each ID links to the category file holding the full card. Read this file in full when scanning; open a category file only when a Detect hint matches the code under review. Kind semantics are defined in the audit skill's Reference catalog section and in the card spec.
+The scan checklist: one row per technique, 87 total. Each ID links to the category file holding the full card. Read this file in full when scanning; open a category file only when a Detect hint matches the code under review. Kind semantics are defined in the audit skill's Reference catalog section and in the card spec.
 
 ## Categories
 
@@ -37,6 +37,8 @@ Orientation for where a technique lives, not a filter: the scan still walks ever
 | [ST-12](storage.md) | Keep token balances from touching zero | advisory | flows fully draining then refilling balances |
 | [ST-13](storage.md) | Count down to zero instead of up | transform | storage counter incremented toward a target |
 | [ST-14](storage.md) | Size timestamp and block-number fields realistically | transform | uint256 fields holding timestamps or blocks |
+| [ST-15](storage.md) | Use fixed-size arrays when the length is bounded | transform | push-grown arrays with compile-time-bounded length |
+| [ST-16](storage.md) | Emit events instead of storing data | advisory | stored values never read on-chain |
 | [DEP-01](deployment.md) | Precompute CREATE addresses to break circular dependencies | advisory | peer-address setter plus storage variable |
 | [DEP-02](deployment.md) | Make constructors payable | transform | constructor without payable keyword |
 | [DEP-03](deployment.md) | Strip or zero-optimize the CBOR metadata hash | transform | bytecode CBOR tail, no appendCBOR:false |
@@ -46,6 +48,7 @@ Orientation for where a technique lives, not a filter: the scan still walks ever
 | [DEP-07](deployment.md) | Mark admin-only functions payable | transform | onlyOwner functions lacking payable |
 | [DEP-08](deployment.md) | Replace require strings with custom errors | transform | require or revert with string literal |
 | [DEP-09](deployment.md) | Reuse a canonical CREATE2 factory | advisory | project ships its own deployer factory |
+| [DEP-10](deployment.md) | Do not initialize state variables to their default value | transform | state vars explicitly initialized to zero |
 | [XC-01](external-calls.md) | Prefer token transfer hooks over pull-based deposits | advisory | approve plus transferFrom-to-this deposit flow |
 | [XC-02](external-calls.md) | Accept plain ETH via receive/fallback instead of a deposit function | advisory | payable deposit function only reacting to ETH |
 | [XC-03](external-calls.md) | Use EIP-2930 access-list transactions for cross-contract calls | advisory | cross-contract or proxy calls, tx-construction time |
@@ -97,6 +100,7 @@ Orientation for where a technique lives, not a filter: the scan still walks ever
 | [EXE-20](execution.md) | Precomputed tables for powers and logarithms | advisory | on-chain fractional power or log math |
 | [EXE-21](execution.md) | Use precompiles for big-number and memory work | advisory | Solidity modexp or bulk memory copies |
 | [EXE-22](execution.md) | Chain multiplications instead of small constant exponents | transform | `**` with small constant exponent |
+| [EXE-23](execution.md) | Keep revert strings under 32 bytes | transform | revert string literals of 32+ characters |
 | [FBD-01](forbidden.md) | Never smuggle inputs through gas price or msg.value | advisory | tx.gasprice or msg.value used as data |
 | [FBD-02](forbidden.md) | Never branch on manipulated block environment values | advisory | logic keyed on coinbase or block fields |
 | [FBD-03](forbidden.md) | Never use gasleft() as a control-flow signal | advisory | gasleft() thresholds steering loops or branches |

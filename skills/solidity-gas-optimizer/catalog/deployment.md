@@ -91,3 +91,13 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Preconditions**: a suitable factory must already exist on every target chain; the deterministic address must be acceptable as a function of that factory's address and your salt/init code
 - **Risks**: inside the deployed constructor `msg.sender` is the factory, not your EOA, silently breaking `Ownable(msg.sender)`-style setups; you inherit trust in the factory's code and its cross-chain availability; address derivation is pinned to that factory forever
 - **Source**: RareSkills Gas Book, Deployment #9
+
+## DEP-10 · Do not initialize state variables to their default value
+- **Kind**: transform
+- **Detect**: state declarations with explicit default initializers: `uint256 x = 0;`, `bool b = false;`, `address a = address(0);`
+- **Hint**: state vars explicitly initialized to zero
+- **Transform**: drop the initializer; storage starts zeroed, so `uint256 foo;` and `uint256 foo = 0;` leave identical state
+- **Savings**: the explicit initializer makes the constructor emit a redundant store of the default value; the source benchmark deploys `uint256 foo;` for 67,148 gas versus 69,332 with `= 0` (solc 0.8.13), about 2.2k gas
+- **Preconditions**: the initializer value equals the type's default; savings land only in the deployment transaction
+- **Risks**: none semantically; some style guides prefer the explicit form for readability
+- **Source**: WTF-gas-optimization, item 18

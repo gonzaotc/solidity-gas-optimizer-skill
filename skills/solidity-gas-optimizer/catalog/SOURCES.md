@@ -92,3 +92,34 @@ Source: https://www.rareskills.io/post/gas-optimization (84 items; 83 carded, on
 | Dangerous techniques | 7 | Appended bytecode subroutines | FBD-07 |
 | Outdated tricks | 1 | external over public | FBD-08 |
 | Outdated tricks | 2 | != 0 over > 0 | FBD-09 |
+
+## WTF-gas-optimization (WTF Academy)
+
+Source: https://github.com/WTFAcademy/WTF-gas-optimization (24 items; 4 carded, 19 already covered by existing cards — 4 of those contributed measurements to the existing card — and 1 omitted).
+
+| # | Item (abbreviated) | Card |
+|---|---|---|
+| 1 | use constant and immutable | covered by ST-06 |
+| 2 | use calldata over memory | covered by CD-03 |
+| 3 | use Bitmap | covered by ST-09 |
+| 4 | use unchecked | covered by EXE-07 |
+| 5 | use uint256 over uint8 | covered by EXE-10 |
+| 6 | use custom error over require/assert | covered by DEP-08 |
+| 7 | use local variable over storage | covered by ST-02 |
+| 8 | use clone over new/create2 | covered by DEP-06 |
+| 9 | packing storage slots | covered by ST-03 |
+| 10 | use ++i as better increment | covered by EXE-06 |
+| 11 | use uint in reentrancy guard | covered by ST-01 |
+| 12 | use < over <= | covered by EXE-01 |
+| 13 | optimized selector/method id | covered by EXE-14 |
+| 14 | selector/method-id order matters | covered by EXE-14 (measurement added) |
+| 15 | use shorter string in require() | EXE-23 |
+| 16 | short circuit in logic operation | covered by EXE-11 |
+| 17 | delete variables to get gas refund | covered by ST-13 |
+| 18 | do not initialize state variables with default values | DEP-10 |
+| 19 | swap 2 variables with destructuring assignment | omitted: saves no gas per the source's own measurement (282 gas both ways) |
+| 20 | set constructor to payable | covered by DEP-02 |
+| 21 | use bytes32 for short string | covered by ST-05 (measurement added) |
+| 22 | use fixed-size array over dynamic array | ST-15 |
+| 23 | use event to store data when possible | ST-16 |
+| 24 | use mapping over array when possible | covered by ST-07 (measurement added) |
