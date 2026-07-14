@@ -33,7 +33,7 @@ fi
 
 for f in "$dir"/*.md; do
   name=$(basename "$f")
-  case "$name" in INDEX.md|SOURCES.md) continue ;; esac
+  case "$name" in INDEX.md|SOURCES.md|SOURCE-LOG.md) continue ;; esac
   prefix="${prefixes[$name]:-}"
   if [ -z "$prefix" ]; then
     echo "FAIL unknown reference file $name (add it to the prefix map in this script)"

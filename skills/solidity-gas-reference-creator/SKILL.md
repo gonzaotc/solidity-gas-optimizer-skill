@@ -33,7 +33,7 @@ Turn a technique description into a validated card in the reference catalog. `re
 
 The steps above add one card per new mechanism. Mining a named source (an article, repo, or thread) runs them zero or more times: some items are new, most are usually duplicates. Whatever the outcome, once you finish enumerating and deduping the whole source, record it:
 
-- **Always**, even for a source that produced no card: add one row to `../solidity-gas-optimizer/SOURCE-LOG.md` with the pull date, the count and IDs of any new cards, and a one-line outcome. This is what stops a dry source from being blindly re-mined, so it must run on the all-duplicate path too, not only when a card was added.
+- **Always**, even for a source that produced no card: add one row to `../solidity-gas-optimizer/catalog/SOURCE-LOG.md` with the pull date, the count and IDs of any new cards, and a one-line outcome. This is what stops a dry source from being blindly re-mined, so it must run on the all-duplicate path too, not only when a card was added.
 - **Only when the source produced at least one original card**: record its item-to-card mapping in `SOURCES.md` (with `Pulled: YYYY-MM-DD`, so a later revision can be diffed against what was carded) and, for a public source, add a line under "Acknowledged sources" in the top-level README. Sources that added no card stay out of both.
 
 This applies to systematic source mining. A one-off pasted technique with no named source needs none of it; attribution stays optional per non-negotiable 3.
