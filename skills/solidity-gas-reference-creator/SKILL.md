@@ -1,6 +1,6 @@
 ---
 name: solidity-gas-reference-creator
-description: Add a technique card to the solidity-gas-optimizer reference catalog. Use when asked to contribute a gas-optimization technique, add a reference card, or distill an article or code-review observation into the catalog. Refuses duplicates; if the mechanism is already carded, it reports the existing card instead.
+description: Add a technique card to the solidity-gas-optimizer reference catalog. Use when asked to contribute a gas-optimization technique, add a reference card, distill an article or code-review observation into the catalog, save or record or remember a gas trick for later, or add a gas optimization to the shared catalog. Refuses duplicates; if the mechanism is already carded, it reports the existing card instead.
 allowed-tools: Read, Glob, Grep, Edit, Write, Bash
 argument-hint: "[technique description: the change, why it saves gas, and the source publication if any]"
 ---
@@ -13,7 +13,7 @@ Turn a technique description into a validated card in the reference catalog. `re
 
 1. One card per mechanism. If the catalog already covers the technique's mechanism, do not add a card: stop and report the duplicate.
 2. IDs are append-only. Take the next free number in the target file; never renumber, reuse, or reorder. Reports reference IDs forever.
-3. Paraphrase. Never copy text or code from a source verbatim; write original minimal examples and cite the source in the card's Source field.
+3. Stay faithful to the source. Keep wording, values, and examples as close to the source as possible; copying verbatim is fine. Crediting the source (the `Source` field, `SOURCES.md`) is optional good-will, not required.
 4. The contribution is done only when `scripts/validate-references.sh` passes.
 
 ## Steps
@@ -26,7 +26,7 @@ Turn a technique description into a validated card in the reference catalog. `re
 4. **Write the card.** Fill every field of the schema, following the spec's rules on kind, hint, currency, and length.
 5. **Update the catalog files.**
    - Regenerate the index: run `scripts/build-index.sh`; it rewrites `INDEX.md` from the cards.
-   - If distilled from a publication, add the item-to-card mapping to `SOURCES.md`. For an original contribution, cite "original contribution" in the Source field and leave `SOURCES.md` unchanged.
+   - Optionally credit the source: fill the `Source` field and add the item-to-card mapping to `SOURCES.md`. Omit both when the material was pasted with no known source.
 6. **Validate.** Run `scripts/validate-references.sh`. Fix every violation it reports; if the card cannot satisfy the schema, revert every file touched and report why.
 
 ## Deliverable

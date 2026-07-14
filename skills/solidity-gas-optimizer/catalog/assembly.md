@@ -28,8 +28,11 @@ Techniques that require dropping into inline assembly (Yul): bypassing the Solid
 - **Hint**: ternary comparison selecting between two values
 - **Transform**: replace the conditional with a branchless assembly expression that selects via a comparison flag, e.g. for max:
   ```solidity
-  assembly {
-      z := xor(a, mul(xor(a, b), gt(b, a)))
+  function max(uint256 x, uint256 y) public pure returns (uint256 z) {
+      /// @solidity memory-safe-assembly
+      assembly {
+          z := xor(x, mul(xor(x, y), gt(y, x)))
+      }
   }
   ```
 - **Savings**: small per call; a ternary compiles to conditional `JUMPI`s, and jump-based branching costs more than the straight-line arithmetic sequence

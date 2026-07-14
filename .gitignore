@@ -4,6 +4,9 @@ temp/
 # Generated audit reports; the deliverable is untracked, never committed into this repo.
 reports/
 
+# Generated DX audit reports; the deliverable is untracked, never committed into this repo.
+dx-audit/
+
 # OS / editor
 .DS_Store
 *.swp

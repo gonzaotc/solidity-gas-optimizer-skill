@@ -28,9 +28,16 @@ Techniques that cut the cost of persistent state: fewer SLOAD/SSTORE operations,
 - **Hint**: adjacent sub-32-byte vars accessed together
 - **Transform**: group co-accessed small variables so the compiler packs them into one slot; for maximum effect, merge them manually into a single word with shifts:
 ```solidity
-uint160 private packed; // hi 80 bits: a, lo 80 bits: b
-function _store(uint80 a, uint80 b) internal {
-    packed = (uint160(a) << 80) | uint160(b);
+uint160 public packedVariables;
+
+function packVariables(uint80 x, uint80 y) external {
+    packedVariables = uint160(x) << 80 | uint160(y);
+}
+
+function unpackVariables() external view returns (uint80, uint80) {
+    uint80 x = uint80(packedVariables >> 80);
+    uint80 y = uint80(packedVariables);
+    return (x, y);
 }
 ```
 - **Savings**: one slot instead of two halves both the cold-access and SSTORE costs when both values touch in one transaction. Manual packing is slightly cheaper than compiler auto-packing because it does one explicit SSTORE instead of letting the EVM mask-and-merge per field.

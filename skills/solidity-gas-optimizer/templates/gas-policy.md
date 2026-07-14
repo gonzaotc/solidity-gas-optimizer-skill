@@ -19,6 +19,13 @@ Techniques you want flagged in the report but never applied automatically. Put t
 | ASM | We avoid assembly unless a reviewer signs off first. |
 | ST-03 | Reordering storage slots is risky on our upgradeable contracts. |
 
+## Compatibility opt-ins
+
+By default the skills never apply a transform that changes storage layout or a `public`/`external` signature; such findings are report-only. Opt in only when nothing depends on the current layout or ABI (pre-deployment code, no integrators):
+
+- `allow-layout-changes`: apply storage-layout-changing transforms (variable packing, struct reordering).
+- `allow-abi-changes`: apply transforms that change signatures, events, or errors (e.g. require strings to custom errors).
+
 ## Context weighting
 
 Background the skills use to decide whether a saving is worth the cost. For example:
