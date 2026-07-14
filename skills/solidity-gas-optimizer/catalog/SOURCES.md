@@ -2,9 +2,12 @@
 
 Optional attribution and coverage aid: credits sources and maps which article item each card came from. Not strictly required. Cards may be added from pasted snippets with no source, and those need no entry here. When you do work from a publication, mapping its items here documents coverage. Retired IDs stay recorded here so they are never reused.
 
+Each section records the date the source was pulled, so a later revision of the source can be diffed against what was carded.
+
 ## RareSkills Book of Gas Optimization
 
 Source: https://www.rareskills.io/post/gas-optimization (84 items; 83 carded, one deliberately omitted).
+Pulled: 2026-07-13.
 
 | Article section | # | Article item (abbreviated) | Card |
 |---|---|---|---|
@@ -96,6 +99,7 @@ Source: https://www.rareskills.io/post/gas-optimization (84 items; 83 carded, on
 ## WTF-gas-optimization (WTF Academy)
 
 Source: https://github.com/WTFAcademy/WTF-gas-optimization (24 items; 4 carded, 19 already covered by existing cards — 4 of those contributed measurements to the existing card — and 1 omitted).
+Pulled: 2026-07-14.
 
 | # | Item (abbreviated) | Card |
 |---|---|---|
@@ -123,3 +127,32 @@ Source: https://github.com/WTFAcademy/WTF-gas-optimization (24 items; 4 carded, 
 | 22 | use fixed-size array over dynamic array | ST-15 |
 | 23 | use event to store data when possible | ST-16 |
 | 24 | use mapping over array when possible | covered by ST-07 (measurement added) |
+
+## kadenzipfel gas-optimizations
+
+Source: https://github.com/kadenzipfel/gas-optimizations (21 items; 7 new cards from 8 items, 13 already covered, and 2 of those flagged against forbidden cards where the source's advice conflicts with the catalog).
+Pulled: 2026-07-14.
+
+| Section | Item | Card |
+|---|---|---|
+| Gas costly patterns | Comparison with Unilateral Outcome in a Loop | EXE-24 |
+| Gas costly patterns | Constant Outcome of a Loop | EXE-25 |
+| Gas costly patterns | Dead Code | DEP-11 |
+| Gas costly patterns | Expensive Operations in a Loop | covered by ST-02 (cache storage in a local across the loop) |
+| Gas costly patterns | Loop Fusion | EXE-27 |
+| Gas costly patterns | Opaque Predicate | EXE-26 |
+| Gas costly patterns | Repeated Computations in a Loop | EXE-24 (same loop-invariant-hoisting mechanism) |
+| Gas costly patterns | Storage Variable as Loop Length | covered by ST-02 (cache `array.length` before the loop) |
+| Gas costly patterns | Unnecessary Libraries | DEP-12 |
+| Gas golfing | Short Revert Strings | covered by EXE-23 (custom-error alternative by DEP-08) |
+| Gas golfing | Unchecked Arithmetic | covered by EXE-07 |
+| Gas golfing | Optimal Comparison Operator | strict `<`/`>` covered by EXE-01; the source's `!=`-is-cheapest claim is the debunked pattern in FBD-09, not adopted |
+| Gas golfing | Payable Functions | FBD-05 (the source itself flags the security trade-off; the safe scoped cases are DEP-02 and DEP-07) |
+| Gas golfing | Function Ordering | covered by EXE-14 |
+| Gas golfing | Using Mulmod Over Mul & Div | EXE-28 |
+| Gas golfing | Optimal Increment and Decrement Operators | covered by EXE-06 |
+| Gas saving patterns | Proper Data Types | covered by EXE-10 (bytes32-over-string by ST-05) |
+| Gas saving patterns | Explicit Function Visibility | the calldata-location benefit is covered by CD-03; the "external cheaper than public" claim is the debunked pattern in FBD-08, not adopted |
+| Gas saving patterns | Short Circuiting | covered by EXE-11 |
+| Gas saving patterns | Constants and Immutables | covered by ST-06 |
+| Gas saving patterns | Struct Bit Packing | covered by ST-04 (manual bit-packing by ST-03) |

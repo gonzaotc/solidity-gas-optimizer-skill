@@ -103,3 +103,4 @@ The catalog is seeded from public gas-optimization work. Full item-to-card cover
 
 - [RareSkills Book of Gas Optimization](https://www.rareskills.io/post/gas-optimization)
 - [WTF-gas-optimization (WTF Academy)](https://github.com/WTFAcademy/WTF-gas-optimization)
+- [kadenzipfel/gas-optimizations](https://github.com/kadenzipfel/gas-optimizations)

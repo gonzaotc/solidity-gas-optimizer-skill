@@ -101,3 +101,29 @@ Techniques whose savings land in the deployment transaction: smaller init/runtim
 - **Preconditions**: the initializer value equals the type's default; savings land only in the deployment transaction
 - **Risks**: none semantically; some style guides prefer the explicit form for readability
 - **Source**: WTF-gas-optimization, item 18
+
+## DEP-11 · Remove dead code
+- **Kind**: advisory
+- **Detect**: statements guarded by a condition that can never be true, so they never execute, e.g. contradictory nested guards like `if (x < 1) { if (x > 2) { ... } }`
+- **Hint**: branches guarded by an always-false condition
+- **Transform**: delete the unreachable code
+- **Savings**: unreachable code still occupies runtime bytecode, adding to the code-deposit cost at deployment (200 gas per byte); removing it shrinks the deployed contract
+- **Preconditions**: the code is provably unreachable for every input and state; whole-program reachability is a static-analysis judgment, so a human should confirm before deleting
+- **Risks**: deleting code reachable under some path removes real behavior, and a test suite with coverage gaps will not catch it
+- **Source**: kadenzipfel gas-optimizations, Dead Code
+
+## DEP-12 · Reimplement small library usages inline
+- **Kind**: advisory
+- **Detect**: a library imported for a few trivial operations (e.g. `SafeMath.add`), pulling in code that is largely redundant to the contract
+- **Hint**: library imported for a few trivial operations
+- **Transform**: implement the needed functionality directly in the contract and drop the library import
+```solidity
+function safeAdd(uint256 a, uint256 b) public pure returns (uint256 c) {
+    c = a + b;
+    require(c >= a, "Addition overflow");
+}
+```
+- **Savings**: avoids depositing the library's unused code and, for external libraries, the DELEGATECALL into it on every use
+- **Preconditions**: the inlined implementation reproduces the library's behavior and safety exactly
+- **Risks**: forgoes the library's audits and reuse; on solc 0.8.0+ arithmetic is checked by default, so reimplementing SafeMath specifically is usually pointless; reinventing security-sensitive code is a common bug source
+- **Source**: kadenzipfel gas-optimizations, Unnecessary Libraries

@@ -2,7 +2,7 @@
 
 Procedurally generated from the category files by `build-index.sh`; do not edit by hand.
 
-The scan checklist: one row per technique, 87 total. Each ID links to the category file holding the full card. Read this file in full when scanning; open a category file only when a Detect hint matches the code under review. Kind semantics are defined in the audit skill's Reference catalog section and in the card spec.
+The scan checklist: one row per technique, 94 total. Each ID links to the category file holding the full card. Read this file in full when scanning; open a category file only when a Detect hint matches the code under review. Kind semantics are defined in the audit skill's Reference catalog section and in the card spec.
 
 ## Categories
 
@@ -49,6 +49,8 @@ Orientation for where a technique lives, not a filter: the scan still walks ever
 | [DEP-08](deployment.md) | Replace require strings with custom errors | transform | require or revert with string literal |
 | [DEP-09](deployment.md) | Reuse a canonical CREATE2 factory | advisory | project ships its own deployer factory |
 | [DEP-10](deployment.md) | Do not initialize state variables to their default value | transform | state vars explicitly initialized to zero |
+| [DEP-11](deployment.md) | Remove dead code | advisory | branches guarded by an always-false condition |
+| [DEP-12](deployment.md) | Reimplement small library usages inline | advisory | library imported for a few trivial operations |
 | [XC-01](external-calls.md) | Prefer token transfer hooks over pull-based deposits | advisory | approve plus transferFrom-to-this deposit flow |
 | [XC-02](external-calls.md) | Accept plain ETH via receive/fallback instead of a deposit function | advisory | payable deposit function only reacting to ETH |
 | [XC-03](external-calls.md) | Use EIP-2930 access-list transactions for cross-contract calls | advisory | cross-contract or proxy calls, tx-construction time |
@@ -101,6 +103,11 @@ Orientation for where a technique lives, not a filter: the scan still walks ever
 | [EXE-21](execution.md) | Use precompiles for big-number and memory work | advisory | Solidity modexp or bulk memory copies |
 | [EXE-22](execution.md) | Chain multiplications instead of small constant exponents | transform | `**` with small constant exponent |
 | [EXE-23](execution.md) | Keep revert strings under 32 bytes | transform | revert string literals of 32+ characters |
+| [EXE-24](execution.md) | Hoist loop-invariant computation out of the loop | transform | loop-invariant expression recomputed each iteration |
+| [EXE-25](execution.md) | Replace a loop with its constant outcome | transform | loop computing a compile-time-constant result |
+| [EXE-26](execution.md) | Remove redundant (opaque) predicates | transform | nested condition already implied by an outer one |
+| [EXE-27](execution.md) | Fuse loops over the same range | transform | consecutive loops sharing the same bounds |
+| [EXE-28](execution.md) | Check exact division with mulmod | transform | exact-division check via mul then div |
 | [FBD-01](forbidden.md) | Never smuggle inputs through gas price or msg.value | advisory | tx.gasprice or msg.value used as data |
 | [FBD-02](forbidden.md) | Never branch on manipulated block environment values | advisory | logic keyed on coinbase or block fields |
 | [FBD-03](forbidden.md) | Never use gasleft() as a control-flow signal | advisory | gasleft() thresholds steering loops or branches |
