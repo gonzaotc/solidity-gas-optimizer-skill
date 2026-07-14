@@ -2,7 +2,7 @@
 
 Procedurally generated from the category files by `build-index.sh`; do not edit by hand.
 
-The scan checklist: one row per technique, 94 total. Each ID links to the category file holding the full card. Read this file in full when scanning; open a category file only when a Detect hint matches the code under review. Kind semantics are defined in the audit skill's Reference catalog section and in the card spec.
+The scan checklist: one row per technique, 95 total. Each ID links to the category file holding the full card. Read this file in full when scanning; open a category file only when a Detect hint matches the code under review. Kind semantics are defined in the audit skill's Reference catalog section and in the card spec.
 
 ## Categories
 
@@ -70,6 +70,7 @@ Orientation for where a technique lives, not a filter: the scan still walks ever
 | [CD-02](calldata.md) | Prefer unsigned types in external parameters | advisory | signed int params on external functions |
 | [CD-03](calldata.md) | Take unmodified reference parameters as calldata | transform | memory params never written, external functions |
 | [CD-04](calldata.md) | Design packed non-ABI calldata for data-heavy L2 functions | advisory | many small padded params, L2 data costs |
+| [CD-05](calldata.md) | Choose zero-byte-friendly values for magic constants | advisory | all-nonzero sentinel constant passed in calldata |
 | [ASM-01](assembly.md) | Revert with a string error from assembly | transform | require/revert with short string literal |
 | [ASM-02](assembly.md) | Make single external calls with hand-rolled calldata in scratch space | advisory | interface call with small encoded arguments |
 | [ASM-03](assembly.md) | Branchless min/max and similar math primitives | transform | ternary comparison selecting between two values |

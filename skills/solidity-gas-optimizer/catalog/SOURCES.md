@@ -190,3 +190,24 @@ Pulled: 2026-07-14.
 | 24 | Mark functions as payable | covered by DEP-02/DEP-07 (blanket-payable hazard is FBD-05) |
 | 25 | Don't use SafeMath on solc >= 0.8.0 | DEP-12 (runtime measurement added: 348 vs 303 gas per add) |
 | 26 | `int` can be more expensive than `uint` | covered by CD-02 |
+
+## OpenZeppelin Forum: A Collection of Gas Optimisation Tricks
+
+Source: https://forum.openzeppelin.com/t/a-collection-of-gas-optimisation-tricks/19966 (20 posts, 2021–2023). 1 new card (CD-05); the rest are canonical tricks already covered. Post #11 was deleted; its content (manual bit-packing) is recoverable from the replies #12/#13 and maps to ST-03/ST-04, so nothing is missing.
+Pulled: 2026-07-14.
+
+| Post | Trick | Card |
+|---|---|---|
+| 1 | Infinite allowance as `2**255` instead of `2**256-1` | CD-05 |
+| 2 | Pack small types (uint64 timestamps) into one slot | covered by ST-03/ST-04 (timestamp sizing ST-14) |
+| 3 | constant/immutable over storage | covered by ST-06 |
+| 4 | Cache a re-read state variable in a local | covered by ST-02 |
+| 5 | Payable constructor cuts 10 creation-code opcodes | covered by DEP-02 |
+| 6 | "Upgrade to 0.8.4+" digest (SafeMath default, inliner, packed-struct fixes, custom errors, cache loop length, calldata over memory, immutable, short revert strings, unchecked increment) | meta-advice; sub-tricks covered by DEP-12, EXE-18, DEP-08, EXE-24/EXE-16, CD-03, ST-06, EXE-23, EXE-07/EXE-08 |
+| 7, 10 | `!= 0` over `> 0` for unsigned | covered by FBD-09 (thread itself concludes no difference on solc 0.8.6+) |
+| 8 | Shift over divide/multiply by two | covered by EXE-15 |
+| 9 | Fallback avoids selector dispatch | omitted: one-line mention, no measurement, dangerous design; dispatch cost is EXE-14, packed fallback calldata is CD-04 |
+| 9 | Negative values costlier in calldata (`0xf` prefix) | covered by CD-02 |
+| 11–13 | Manual bit-packing vs packed struct (post #11 deleted) | covered by ST-03/ST-04 |
+| 14–16 | `!=` cheaper than `<` for a max-boundary check | covered by EXE-01 (comparison-operator choice); thread concludes viaIR equalizes the bytecode |
+| 20–21 | calldata for `string` params (constructor params must be memory) | covered by CD-03 |

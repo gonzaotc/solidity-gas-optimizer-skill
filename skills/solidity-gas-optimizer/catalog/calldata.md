@@ -41,3 +41,13 @@ Techniques that shrink transaction calldata or make it cheaper to consume: zero-
 - **Preconditions**: only worth weighing when calldata dominates the function's cost, which historically meant L2s posting calldata to L1. Since Dencun (EIP-4844) most L2s post blobs instead, so the payoff is far smaller than when this advice was written.
 - **Risks**: abandons the standard ABI entirely: explorers, wallets, SDKs, verification tooling, and downstream integrators all lose automatic encoding/decoding, and the hand-rolled decoder becomes a standing bug and audit burden. Changing an existing function's encoding breaks every caller. Never apply automatically; justified only as a deliberate interface design by humans.
 - **Source**: RareSkills Gas Book, Calldata #4
+
+## CD-05 · Choose zero-byte-friendly values for magic constants
+- **Kind**: advisory
+- **Detect**: sentinel or "infinity" constants whose hex is all nonzero bytes carried in calldata, e.g. `type(uint256).max` (`0xff…ff`) used as an infinite-allowance value
+- **Hint**: all-nonzero sentinel constant passed in calldata
+- **Transform**: where the exact value is a free convention, pick one with a zero-heavy byte representation, e.g. represent "infinity" as `2**255` (`0x8000…0000`) instead of `2**256 - 1`
+- **Savings**: zero bytes are cheaper than nonzero bytes in the yellow paper's cost schedule; the source's 2021 Remix benchmark measures the approve at 47,872 gas with `2**256-1` versus 45,888 with `2**255`, about 1,984 gas (4.1%) once
+- **Preconditions**: the constant's value is not fixed by an external standard or convention, and every reader of the value agrees on the same sentinel
+- **Risks**: net-negative in the common ERC-20 case. OpenZeppelin and most tokens treat `allowance == type(uint256).max` as infinite and skip the per-transfer allowance-decrement SSTORE; a `2**255` allowance is not recognized as that sentinel, so every `transferFrom` pays a ~2,900+ gas storage write, dwarfing the one-time saving. Apply only where no such max-sentinel special-casing exists; diverging from the `type(uint256).max` convention also breaks integrators that check for it
+- **Source**: OpenZeppelin Forum, A Collection of Gas Optimisation Tricks, post #1 (pcaversaccio)
