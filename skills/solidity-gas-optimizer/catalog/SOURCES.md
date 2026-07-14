@@ -211,3 +211,36 @@ Pulled: 2026-07-14.
 | 11–13 | Manual bit-packing vs packed struct (post #11 deleted) | covered by ST-03/ST-04 |
 | 14–16 | `!=` cheaper than `<` for a max-boundary check | covered by EXE-01 (comparison-operator choice); thread concludes viaIR equalizes the bytecode |
 | 20–21 | calldata for `string` params (constructor params must be memory) | covered by CD-03 |
+
+## harendra-shakya/solidity-gas-optimization
+
+Source: https://github.com/harendra-shakya/solidity-gas-optimization (README prose guide). No new cards: a derivative, pre-Berlin-era digest whose tricks are all already carded, several with stale numbers the catalog already corrects (storage-clearing and selfdestruct refunds). Its "Yul tricks" section is a verbatim copy of the transmissions11 list, so a future re-pull is not fresh material.
+Pulled: 2026-07-14.
+
+| Section | Trick | Card |
+|---|---|---|
+| Storage / Tips | Cache storage in memory, compute before writing, pack vars/structs, no zero-init, constants | ST-02, ST-03, ST-04, DEP-10, ST-06 |
+| Storage / Refunds | Zero out unused slots for a refund (stale 15,000) | covered by ST-13 (catalog notes EIP-3529: 4,800, capped) |
+| Storage / Refunds | Selfdestruct refund (stale 24,000) | covered by DEP-04 (obsolete; EIP-3529/6780) |
+| Storage / Data types | bytes32 over string, smallest bytesN, uint8-alone-not-cheaper | ST-05, ST-03/ST-04, EXE-10 |
+| Storage / Inheritance | Child vars pack with parent vars (C3 linearization) | covered by ST-03/ST-04 (same slot-packing mechanism) |
+| Storage / Memory vs Storage | Storage pointer instead of copying to memory | covered by ST-11 |
+| Variables | Avoid public / prefer private, events over storage, named returns | EXE-12, ST-16, EXE-04 |
+| Variables / Mapping vs Array | Mapping over array | covered by ST-07 |
+| Variables / Fixed vs Dynamic | Fixed-size arrays, bytes32 for short string | ST-15, ST-05 |
+| Variables / Fixed vs Dynamic | Additive over subtractive array ops | omitted: this is the ST-13/ST-01 refund mechanism, and as stated is partly wrong (truncating earns the refund) |
+| Functions | external/calldata params, function ordering, payable, modifiers-as-functions | CD-03 (FBD-08 for the debunked external<public claim), EXE-14, DEP-02/DEP-07 (FBD-05), DEP-05 |
+| Functions / Fallback | Fallback avoids selector dispatch | omitted: one-line mention, no measurement; dispatch cost is EXE-14, packed fallback calldata CD-04 |
+| Loops | Memory vars, avoid unbounded, no zero-init, `++i` | ST-02/EXE-24, DEP-10, EXE-06 |
+| Operations | Operand ordering, short-circuiting, unchecked | EXE-11, EXE-07 |
+| Other | Dead code, minimize cross-contract calls (EXTCODESIZE) | DEP-11, XC-06 |
+| Other / Libraries | External library keeps bytecode out of client | covered-adjacent DEP-12 (same lib-vs-inline deployment tradeoff, opposite direction) |
+| Other / Errors | Short require strings; require-vs-assert gas | EXE-23; assert note omitted (stale pre-0.8 and a correctness point, not gas) |
+| Other / Hash | keccak256 cheaper than sha256/ripemd160 | omitted: applicable only when hash choice is free, which interop almost always dictates otherwise |
+| Other | ERC1167 minimal proxy for many clones | covered by DEP-06 |
+| Merkle proof | Prove large data with a small proof | omitted: one-line, no mechanism; the allowlist-specific tradeoff is ARC-02 |
+| Yul tricks | Access lists | covered by XC-03 |
+| Yul tricks | Keep data in calldata; sub-32-byte caveat; negative-value calldata cost; write to existing slot (EIP-2200); SSTORE2 | CD-03, EXE-10, CD-02, ST-01, ST-10 |
+| Yul tricks | Vanity-pack two addresses into one storage slot | omitted: covered-adjacent ST-03 + CD-01; exotic, no measurement |
+| Yul tricks | `iszero()` before JUMP; `gas()` in `call()`; copy Solmate assembly; verify Yul beats compiler | omitted: opaque/version-dependent micro-tips or meta-advice, no durable mechanism |
+| Yul tricks | Remove unnecessary NFT zero-address checks | omitted: security-sensitive contest advice, not a mechanical gas transform |
