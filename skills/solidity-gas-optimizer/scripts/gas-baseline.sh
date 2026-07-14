@@ -4,9 +4,11 @@
 # Env: GAS_ENV overrides the variable enabling the hardhat reporter (default REPORT_GAS;
 #      some configs use GAS via yargs .env('')). TEST_FILES optionally scopes the run.
 set -euo pipefail
-fw="$1"; out="$2"
+fw="$1"
+out="$(mkdir -p "$2" && cd "$2" && pwd)"
 cd "${3:-.}"
-mkdir -p "$out"
+
+trap 'echo "BASELINE_FAILED=$fw baseline failed; see output above" >&2' ERR
 
 case "$fw" in
   foundry)

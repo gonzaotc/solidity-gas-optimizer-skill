@@ -1,6 +1,6 @@
 ---
 name: solidity-gas-reference-creator
-description: Add a technique card to the solidity-gas-optimizer reference catalog. Use when asked to contribute a gas-optimization technique, add a reference card, or distill an article or code-review observation into the catalog. Refuses duplicates; if the mechanism is already carded, it reports the existing card instead.
+description: Add a technique card to the solidity-gas-optimizer reference catalog. Use when asked to contribute a gas-optimization technique, add a reference card, distill an article or code-review observation into the catalog, save or record or remember a gas trick for later, or add a gas optimization to the shared catalog. Refuses duplicates; if the mechanism is already carded, it reports the existing card instead.
 allowed-tools: Read, Glob, Grep, Edit, Write, Bash
 argument-hint: "[technique description: the change, why it saves gas, and the source publication if any]"
 ---

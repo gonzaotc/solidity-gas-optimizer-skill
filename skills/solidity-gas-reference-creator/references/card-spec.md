@@ -37,7 +37,7 @@ File is a routing bucket, not identity: the ID is a card's identity and never ch
 
 Rules:
 
-- **Kind.** `transform` = mechanically applicable as a local diff, verifiable by tests and measurement; enters the verify loop and the Phase 5 challenge. `advisory` = reported as a labeled estimate, never auto-applied. Use `advisory` for design-level changes that are not a local diff, and for techniques that must not be applied mechanically: security hazards, deprecated mechanics, API or storage-layout breakers, and contest-only cleverness.
+- **Kind.** `transform` = mechanically applicable as a local diff, verifiable by tests and measurement; enters the verify loop and the Phase 5 challenge. `advisory` = reported as a labeled estimate, never auto-applied. Use `advisory` for design-level changes that are not a local diff, and for techniques that must never be applied mechanically regardless of policy: security hazards, deprecated mechanics, and contest-only cleverness. Techniques that change storage layout or the public ABI stay `transform` but are gated by the policy's compatibility freeze, which defaults to frozen.
 - **Hint.** One short line, since the whole index is read at scan time.
 - **Stay current.** If a technique's validity changed with an EVM upgrade or compiler version, the card must say so in Risks with the EIP or solc version. A card that overstates savings is worse than no card.
 - **Stay faithful.** Keep wording, values, and code examples as close to the source as possible; copying verbatim is fine. Prefer the source's own example over an invented equivalent. Only the schema fields (Kind, Hint, routing) are ours to impose.

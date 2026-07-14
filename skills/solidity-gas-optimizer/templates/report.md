@@ -43,7 +43,7 @@ Each finding reads top to bottom: what the code does, why it can be optimized, t
 
 **Recommendation.** {{recommend / team-decision / reject}} for this context. {{Analyzer rationale, verbatim.}}
 
-_Evidence: {{targeted suites run}}; full suite {{status}}; touched lines covered: {{yes/no}}; commit {{ref}}._
+_Evidence: {{targeted suites run}}; full suite {{status}}; touched lines covered (agent-asserted, not tool-measured): {{yes/no}}; commit {{ref}}._
 
 ## Advisory findings
 

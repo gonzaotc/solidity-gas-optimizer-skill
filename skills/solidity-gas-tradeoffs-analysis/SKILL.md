@@ -31,6 +31,7 @@ First matching row wins. These are target-neutral defaults, deliberately generic
 
 | Measured savings | Complexity cost | Verdict |
 |---|---|---|
+| Any | Changes storage layout or a public/external signature without a policy opt-in | team-decision at most; reject when the contract is deployed or upgradeable |
 | Any | Security-relevant and unmitigated | reject |
 | At or below the noise threshold | Any | reject |
 | Above the threshold | None (safe idiom) | recommend |
@@ -50,5 +51,7 @@ Verdicts: `recommend`, `team-decision`, `reject`. Every `team-decision` must car
 ## Policy layering
 
 The rubric above is the general orientation: target-neutral and slightly agnostic by design, so it holds for any project. A target's gas policy (`.claude/gas-policy.md`, a root `gas-policy.md`, or one the caller provides) extends it with the project's specifics: a storage-layout freeze, an assembly-averse style, its target chains and hot paths, a different noise floor. The template and its fields live in `../solidity-gas-optimizer/templates/gas-policy.md`.
+
+Compatibility is frozen by default: transforms that change storage layout or a public/external signature need an explicit policy opt-in (`allow-layout-changes`, `allow-abi-changes`) to be applied rather than reported.
 
 Treat the policy as an extension of the defaults, not a replacement. Its added constraints and weightings specialize the general rubric for the project; the defaults still decide everything the policy leaves unsaid. The maintaining team edits the defaults deliberately; project-specific values belong in the target policy, not here.
