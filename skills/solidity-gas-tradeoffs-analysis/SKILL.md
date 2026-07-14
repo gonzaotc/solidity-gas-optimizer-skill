@@ -1,6 +1,6 @@
 ---
 name: solidity-gas-tradeoffs-analysis
-description: Challenge gas-optimization findings with an adversarial tradeoff analysis. Use when asked to challenge or review a gas report, judge whether an optimization is worth its readability, auditability, or security cost, or issue verdicts on measured gas findings.
+description: Challenge gas-optimization findings with an adversarial tradeoff analysis. Use when asked to challenge a gas report or review whether a gas optimization is worth its readability, auditability, or security cost, or to issue recommend/team-decision/reject verdicts on measured gas findings. For running or re-running the audit itself, use solidity-gas-optimizer.
 allowed-tools: Read, Glob, Grep, Bash
 argument-hint: "[gas report or findings to challenge, plus diffs if available]"
 ---
@@ -27,7 +27,7 @@ Before judging, load the gas policy, first match wins: the policy the caller pro
 
 ## Decision matrix
 
-First matching row wins. These are target-neutral defaults, deliberately generic; a policy sharpens them with its own thresholds and weighting, so never treat a cutoff as fixed. "Noise" means the policy's measurement-noise threshold, defaulting to single-digit gas per call only when the policy is silent. Never assume small savings are worthless: a library optimizing hot paths may set the threshold to zero so every measured saving counts.
+First matching row wins. These are target-neutral defaults, deliberately generic; a policy sharpens them with its own thresholds and weighting, so never treat a cutoff as fixed. "Noise" means the policy's measurement-noise threshold, defaulting to 10 gas per call only when the policy is silent. Never assume small savings are worthless: a library optimizing hot paths may set the threshold to zero so every measured saving counts.
 
 | Measured savings | Complexity cost | Verdict |
 |---|---|---|

@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
-# Records a gas baseline for later comparison.
+# Records a gas baseline for later comparison. For Foundry it also captures a
+# per-function gas report (RANKING output) used to rank hot functions in Phase 1.3;
+# the snapshot stays the diff baseline of record and the two are not interchangeable.
 # Usage: gas-baseline.sh <foundry|hardhat> <output-dir> [repo-root]
 # Env: GAS_ENV overrides the variable enabling the hardhat reporter (default REPORT_GAS;
 #      some configs use GAS via yargs .env('')). TEST_FILES optionally scopes the run.
 set -euo pipefail
+if [ "$#" -lt 2 ]; then
+  echo "Usage: gas-baseline.sh <foundry|hardhat> <output-dir> [repo-root]" >&2
+  exit 2
+fi
 fw="$1"
 out="$(mkdir -p "$2" && cd "$2" && pwd)"
 cd "${3:-.}"
@@ -15,6 +21,12 @@ case "$fw" in
     forge snapshot --snap "$out/gas.snapshot"
     forge build --sizes > "$out/sizes.txt" 2>/dev/null || true
     echo "BASELINE=$out/gas.snapshot"
+    if forge test --gas-report > "$out/gas-report.txt" 2>/dev/null && [ -s "$out/gas-report.txt" ]; then
+      echo "RANKING=$out/gas-report.txt"
+      echo "NOTE=gas.snapshot is the diff baseline of record; gas-report.txt is per-function data for ranking only and is not comparable to snapshot totals"
+    else
+      echo "WARN=gas-report capture failed or is empty; rank functions from a manual 'forge test --gas-report' run and keep gas.snapshot as the baseline of record"
+    fi
     ;;
   hardhat)
     env "${GAS_ENV:-REPORT_GAS}=true" npx hardhat test ${TEST_FILES:-} > "$out/gas-report.txt" 2>&1

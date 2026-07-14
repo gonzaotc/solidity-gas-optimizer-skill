@@ -102,7 +102,9 @@ if $forge_ok && $hardhat && [ -n "$target_name" ]; then
   fi
 elif $forge_ok; then
   echo "MEASURE_WITH=foundry"
-  $hardhat && echo "NOTE=both frameworks present; confirm per target where its tests live before measuring"
+  if $hardhat; then
+    echo "NOTE=both frameworks present; confirm per target where its tests live before measuring"
+  fi
 elif $hardhat_measurable; then
   echo "MEASURE_WITH=hardhat"
   echo "NOTE=reporter tables only cover functions the tests exercise"
@@ -110,3 +112,5 @@ else
   echo "ERROR=no gas measurement available; install forge (Foundry) or add hardhat-gas-reporter, then rerun"
   exit 1
 fi
+
+exit 0

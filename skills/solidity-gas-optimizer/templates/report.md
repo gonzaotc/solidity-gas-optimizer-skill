@@ -16,7 +16,7 @@
 |----|-----------|----------|------------------|-------|---------|
 | [GAS-H-01](#gas-h-01) | | | | | |
 
-Each ID encodes severity (`H`/`M`/`L` per the skill rubric) and links to its finding below. Verdict comes from the tradeoff analysis, never from the optimizer pass.
+Each ID encodes severity (`H`/`M`/`L` per the skill rubric) and links to its finding below. Verdict comes from the Phase 5 tradeoff analysis; when that ran in the same context rather than a fresh-context agent, mark the verdict `self-reviewed`.
 
 ## Findings
 

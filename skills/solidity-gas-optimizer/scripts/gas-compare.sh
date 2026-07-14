@@ -3,6 +3,10 @@
 # Usage: gas-compare.sh <foundry|hardhat> <baseline-dir> [repo-root]
 # Env: GAS_ENV and TEST_FILES as in gas-baseline.sh; use identical values for both runs.
 set -euo pipefail
+if [ "$#" -lt 2 ]; then
+  echo "Usage: gas-compare.sh <foundry|hardhat> <baseline-dir> [repo-root]" >&2
+  exit 2
+fi
 fw="$1"; base="$2"
 cd "${3:-.}"
 
