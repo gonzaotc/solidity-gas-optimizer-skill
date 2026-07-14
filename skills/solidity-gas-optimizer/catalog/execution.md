@@ -148,7 +148,7 @@ do {
 - **Detect**: frequently called external functions whose 4-byte selectors have no leading zero bytes
 - **Hint**: hot functions with non-zero-leading selectors
 - **Transform**: append a mined suffix to the function name (tooling exists to search suffixes) until the selector starts with zero bytes and sorts low
-- **Savings**: with few functions, dispatch is a linear scan ordered by selector value, so low selectors match sooner; zero selector bytes also cost 4 gas each in calldata versus 16 for non-zero
+- **Savings**: with few functions, dispatch is a linear scan ordered by selector value, so low selectors match sooner (a Foundry benchmark measures ~22 gas per dispatch position); zero selector bytes also cost 4 gas each in calldata versus 16 for non-zero
 - **Preconditions**: contract has four or fewer external functions for the linear-scan benefit (more triggers binary search, shrinking the dispatch gain); calldata savings apply regardless
 - **Risks**: mangled names (`transfer_Xyz123`) hurt readability, tooling, and interface compatibility; renaming an existing function changes its selector and breaks callers
 - **Source**: RareSkills Gas Book, Compiler-related #14
@@ -237,3 +237,13 @@ function equal(bytes memory a, bytes memory b) internal pure returns (bool) {
 - **Preconditions**: small constant exponents where the expansion stays readable; the optimizer may already strength-reduce constant exponents, so measure
 - **Risks**: none; both checked forms revert identically on overflow in solc 0.8.x
 - **Source**: RareSkills Gas Book, Compiler-related #22
+
+## EXE-23 · Keep revert strings under 32 bytes
+- **Kind**: transform
+- **Detect**: `require(cond, "…")` or `revert("…")` whose string literal is 32 characters or longer
+- **Hint**: revert string literals of 32+ characters
+- **Transform**: shorten the message to 31 characters or fewer so it fits a single word, e.g. `require(balance > 0, "Bad Balance");`
+- **Savings**: each extra 32-byte chunk of the string costs deployed bytecode (200 gas per byte) and extra memory stores when the revert path runs; the source benchmark measures the reverting call at 2,347 gas with a short string versus 2,578 with a long one (solc 0.8.13)
+- **Preconditions**: only relevant where string reverts are kept at all; the shortened message must stay meaningful
+- **Risks**: changes the observable revert message, breaking tests and integrators that match on it; custom errors (solc ≥0.8.4) are cheaper than any string and usually the better fix
+- **Source**: WTF-gas-optimization, item 15

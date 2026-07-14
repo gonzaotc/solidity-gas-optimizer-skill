@@ -60,7 +60,7 @@ function unpackVariables() external view returns (uint80, uint80) {
 - **Detect**: `string` or `bytes` state variables initialized or assigned with literals at or beyond 32 characters; names, symbols, URIs stored on-chain.
 - **Hint**: string state vars with long literals
 - **Transform**: design stored text to fit in 31 bytes. Short strings live entirely in their declared slot (data in the high bytes, length*2 in the low byte); at 32+ bytes the slot holds only length*2+1 and the data moves to slots starting at keccak256(slot). A further step is declaring the field as `bytes32` and packing/unpacking manually (assembly), avoiding dynamic-type overhead entirely.
-- **Savings**: staying short avoids the keccak-derived indirection plus one extra cold SLOAD (2,100) per 32-byte chunk on every read, and the corresponding SSTOREs on write.
+- **Savings**: staying short avoids the keccak-derived indirection plus one extra cold SLOAD (2,100) per 32-byte chunk on every read, and the corresponding SSTOREs on write. For the bytes32 variant, a Foundry benchmark measures writing a short literal to a `bytes32` field at 22,222 gas versus 22,682 for the `string` equivalent.
 - **Preconditions**: content length must be bounded below 32 bytes by construction; the bytes32/assembly variant needs an explicit length guard on write.
 - **Risks**: content length is usually a product decision, not a code diff. The assembly variant costs significant readability and is easy to get wrong around memory-pointer handling; on modern solc, prefer typed code unless measurements justify it.
 - **Source**: RareSkills Gas Book, Storage #5
@@ -80,7 +80,7 @@ function unpackVariables() external view returns (uint80, uint80) {
 - **Detect**: storage arrays (`uint256[] x`) accessed only by known-valid index, never iterated, never queried for `.length`; index-keyed registries.
 - **Hint**: arrays indexed but never iterated
 - **Transform**: store the items in a `mapping(uint256 => T)` keyed by the former index. Array indexing emits a bounds check that SLOADs the length slot and reverts with `Panic(0x32)` when out of range; mapping access hashes the key and reads the slot directly, no length involved.
-- **Savings**: about 2,100 gas per read when the length slot would have been cold (the article measures ~2,102 on a fresh read); only ~100 plus a few ops when the length is already warm, so the headline number assumes cold access.
+- **Savings**: about 2,100 gas per read when the length slot would have been cold (the article measures ~2,102 on a fresh read); only ~100 plus a few ops when the length is already warm, so the headline number assumes cold access. Writes gain too: a `push` also initializes or updates the length slot, and a Foundry benchmark measures a first insert at 44,442 gas via array versus 22,385 via mapping.
 - **Preconditions**: every access must be provably in-bounds by the surrounding logic, since the mapping enforces nothing; the code must not need `.length`, iteration, `push`/`pop`, or ABI array semantics.
 - **Risks**: out-of-range keys silently return zero instead of reverting, converting a loud bug into silent state corruption; length must be tracked separately if ever needed. Swapping the type on a deployed/upgradeable contract changes slot derivation for the data and is breaking.
 - **Source**: RareSkills Gas Book, Storage #7
@@ -158,3 +158,23 @@ OpenZeppelin's `BitMaps` library wraps this.
 - **Preconditions**: only worthwhile when the shrunken field actually co-packs with other members accessed in the same transaction; casts from `block.timestamp` need a truncation-safe conversion (e.g. `SafeCast.toUint48`).
 - **Risks**: mixed-width arithmetic invites silent truncation at cast sites; comparisons against unshrunken `uint256` values need care. Narrowing a field in an already-deployed or upgradeable contract rewrites the slot layout and is breaking.
 - **Source**: RareSkills Gas Book, Storage #14
+
+## ST-15 · Use fixed-size arrays when the length is bounded
+- **Kind**: transform
+- **Detect**: storage arrays (`uint256[] x`) grown by `push` up to a maximum known at compile time; dynamic arrays whose element count is bounded by design.
+- **Hint**: push-grown arrays with compile-time-bounded length
+- **Transform**: declare the array fixed-size (`uint256[1000] x`) and write elements by index instead of `push`.
+- **Savings**: every `push` updates the array's length slot in addition to the element; a fixed-size array has no length slot to maintain. The source benchmark fills 99 elements for 2,182,608 gas fixed versus 2,224,770 dynamic (solc 0.8.13), roughly 425 gas per element.
+- **Preconditions**: the maximum length is known at compile time; the code does not rely on `.length` as a live element count, `push`/`pop`, or ABI dynamic-array semantics.
+- **Risks**: reading a never-written index returns zero instead of reverting; if the logical count must be tracked in a separate variable, that write can eat the saving. Swapping the type on a deployed or upgradeable contract moves the data location (fixed arrays occupy sequential slots, dynamic data lives at keccak-derived slots) and is a breaking layout change.
+- **Source**: WTF-gas-optimization, item 22
+
+## ST-16 · Emit events instead of storing data
+- **Kind**: advisory
+- **Detect**: storage writes to values no contract logic ever reads back: audit trails, historical records, per-action metadata kept only for off-chain consumers.
+- **Hint**: stored values never read on-chain
+- **Transform**: emit the data in an event and drop the state variable; off-chain consumers read it from the transaction logs.
+- **Savings**: a LOG costs 375 gas plus 375 per topic plus 8 per byte, versus 20,000+ for a fresh SSTORE; the source benchmark measures 1,189 gas emitting versus 22,216 storing the same value.
+- **Preconditions**: no contract, now or later, needs the value on-chain; consumers have log-indexing infrastructure (events are invisible to the EVM).
+- **Risks**: the data becomes permanently unreadable from contracts, and retrofitting on-chain reads later requires a state migration. A data-availability design decision, never a mechanical local diff.
+- **Source**: WTF-gas-optimization, item 23
