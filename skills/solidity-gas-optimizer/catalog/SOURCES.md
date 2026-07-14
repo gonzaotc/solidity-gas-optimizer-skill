@@ -156,3 +156,37 @@ Pulled: 2026-07-14.
 | Gas saving patterns | Short Circuiting | covered by EXE-11 |
 | Gas saving patterns | Constants and Immutables | covered by ST-06 |
 | Gas saving patterns | Struct Bit Packing | covered by ST-04 (manual bit-packing by ST-03) |
+
+## 0xKitsune EVM-Gas-Optimizations
+
+Source: https://github.com/0xKitsune/EVM-Gas-Optimizations (26 README sections; the ETH-balance section is repeated verbatim, so 25 distinct techniques). No new cards: 20 already covered by existing cards, 1 contributed a runtime measurement to DEP-12, and 4 omitted as marginal or optimizer-handled with no distinct durable mechanism. Assembly-heavy and overlaps the RareSkills seed source; benchmarks predate solc 0.8.22.
+Pulled: 2026-07-14.
+
+| # | Section | Card |
+|---|---|---|
+| 1 | Use assembly for a contract's ETH balance | covered by ASM-06 |
+| 2 | `unchecked{++i}` instead of `i++` | covered by EXE-06 (and EXE-07/EXE-08) |
+| 3 | Use assembly for math (add/sub/mul/div) | covered by EXE-07 (assembly skips the same overflow check as `unchecked`, no further mechanism) |
+| 4 | Tightly pack storage variables | covered by ST-03 |
+| 5 | Short circuiting | covered by EXE-11 |
+| 6 | Use `calldata` instead of `memory` | covered by CD-03 |
+| 7 | Pack calldata where possible | covered by CD-04 |
+| 8 | Cache memory values before a `for` loop | covered by EXE-24 (loop-invariant hoisting) |
+| 9 | Cache array length in `for` loop | covered by EXE-24 (calldata case EXE-16, storage case ST-02) |
+| 10 | Pack structs | covered by ST-04 |
+| 11 | `immutable`/`constant` for never-changed variables | covered by ST-06 |
+| 12 | Use assembly to hash | covered by ASM-07 |
+| 13 | Use assembly to call an external contract | covered by ASM-02 |
+| 14 | Right shift instead of dividing by two | covered by EXE-15 |
+| 15 | Left shift instead of multiplying by two | covered by EXE-15 |
+| 16 | Use assembly to check for `address(0)` | covered by ASM-05 |
+| 17 | Use assembly to compare a storage value | omitted: ~18 gas generic-assembly `sload`+`eq` variant, optimizer-dependent, no distinct durable mechanism |
+| 18 | Use assembly to write storage values | omitted: ~66 gas generic-assembly `sstore` variant, same rationale |
+| 19 | `array[i] += amount` over `array[i] = array[i] + amount` | omitted: the optimizer equalizes these; marginal and version-dependent |
+| 20 | Use assembly for a contract's ETH balance (repeat of #1) | covered by ASM-06 (source repeats the section verbatim) |
+| 21 | `if(x)` instead of `if(x == bool)` | omitted: trivial redundant-comparison cleanup the compiler already performs |
+| 22 | Multiple `require()` instead of `&&` | covered by EXE-02 |
+| 23 | Custom errors over string messages | covered by DEP-08 |
+| 24 | Mark functions as payable | covered by DEP-02/DEP-07 (blanket-payable hazard is FBD-05) |
+| 25 | Don't use SafeMath on solc >= 0.8.0 | DEP-12 (runtime measurement added: 348 vs 303 gas per add) |
+| 26 | `int` can be more expensive than `uint` | covered by CD-02 |
