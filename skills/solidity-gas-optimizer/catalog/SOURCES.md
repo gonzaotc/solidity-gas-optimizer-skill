@@ -157,40 +157,6 @@ Pulled: 2026-07-14.
 | Gas saving patterns | Constants and Immutables | covered by ST-06 |
 | Gas saving patterns | Struct Bit Packing | covered by ST-04 (manual bit-packing by ST-03) |
 
-## 0xKitsune EVM-Gas-Optimizations
-
-Source: https://github.com/0xKitsune/EVM-Gas-Optimizations (26 README sections; the ETH-balance section is repeated verbatim, so 25 distinct techniques). No new cards: 20 already covered by existing cards, 1 contributed a runtime measurement to DEP-12, and 4 omitted as marginal or optimizer-handled with no distinct durable mechanism. Assembly-heavy and overlaps the RareSkills seed source; benchmarks predate solc 0.8.22.
-Pulled: 2026-07-14.
-
-| # | Section | Card |
-|---|---|---|
-| 1 | Use assembly for a contract's ETH balance | covered by ASM-06 |
-| 2 | `unchecked{++i}` instead of `i++` | covered by EXE-06 (and EXE-07/EXE-08) |
-| 3 | Use assembly for math (add/sub/mul/div) | covered by EXE-07 (assembly skips the same overflow check as `unchecked`, no further mechanism) |
-| 4 | Tightly pack storage variables | covered by ST-03 |
-| 5 | Short circuiting | covered by EXE-11 |
-| 6 | Use `calldata` instead of `memory` | covered by CD-03 |
-| 7 | Pack calldata where possible | covered by CD-04 |
-| 8 | Cache memory values before a `for` loop | covered by EXE-24 (loop-invariant hoisting) |
-| 9 | Cache array length in `for` loop | covered by EXE-24 (calldata case EXE-16, storage case ST-02) |
-| 10 | Pack structs | covered by ST-04 |
-| 11 | `immutable`/`constant` for never-changed variables | covered by ST-06 |
-| 12 | Use assembly to hash | covered by ASM-07 |
-| 13 | Use assembly to call an external contract | covered by ASM-02 |
-| 14 | Right shift instead of dividing by two | covered by EXE-15 |
-| 15 | Left shift instead of multiplying by two | covered by EXE-15 |
-| 16 | Use assembly to check for `address(0)` | covered by ASM-05 |
-| 17 | Use assembly to compare a storage value | omitted: ~18 gas generic-assembly `sload`+`eq` variant, optimizer-dependent, no distinct durable mechanism |
-| 18 | Use assembly to write storage values | omitted: ~66 gas generic-assembly `sstore` variant, same rationale |
-| 19 | `array[i] += amount` over `array[i] = array[i] + amount` | omitted: the optimizer equalizes these; marginal and version-dependent |
-| 20 | Use assembly for a contract's ETH balance (repeat of #1) | covered by ASM-06 (source repeats the section verbatim) |
-| 21 | `if(x)` instead of `if(x == bool)` | omitted: trivial redundant-comparison cleanup the compiler already performs |
-| 22 | Multiple `require()` instead of `&&` | covered by EXE-02 |
-| 23 | Custom errors over string messages | covered by DEP-08 |
-| 24 | Mark functions as payable | covered by DEP-02/DEP-07 (blanket-payable hazard is FBD-05) |
-| 25 | Don't use SafeMath on solc >= 0.8.0 | DEP-12 (runtime measurement added: 348 vs 303 gas per add) |
-| 26 | `int` can be more expensive than `uint` | covered by CD-02 |
-
 ## OpenZeppelin Forum: A Collection of Gas Optimisation Tricks
 
 Source: https://forum.openzeppelin.com/t/a-collection-of-gas-optimisation-tricks/19966 (20 posts, 2021–2023). 1 new card (CD-05); the rest are canonical tricks already covered. Post #11 was deleted; its content (manual bit-packing) is recoverable from the replies #12/#13 and maps to ST-03/ST-04, so nothing is missing.
@@ -212,35 +178,3 @@ Pulled: 2026-07-14.
 | 14–16 | `!=` cheaper than `<` for a max-boundary check | covered by EXE-01 (comparison-operator choice); thread concludes viaIR equalizes the bytecode |
 | 20–21 | calldata for `string` params (constructor params must be memory) | covered by CD-03 |
 
-## harendra-shakya/solidity-gas-optimization
-
-Source: https://github.com/harendra-shakya/solidity-gas-optimization (README prose guide). No new cards: a derivative, pre-Berlin-era digest whose tricks are all already carded, several with stale numbers the catalog already corrects (storage-clearing and selfdestruct refunds). Its "Yul tricks" section is a verbatim copy of the transmissions11 list, so a future re-pull is not fresh material.
-Pulled: 2026-07-14.
-
-| Section | Trick | Card |
-|---|---|---|
-| Storage / Tips | Cache storage in memory, compute before writing, pack vars/structs, no zero-init, constants | ST-02, ST-03, ST-04, DEP-10, ST-06 |
-| Storage / Refunds | Zero out unused slots for a refund (stale 15,000) | covered by ST-13 (catalog notes EIP-3529: 4,800, capped) |
-| Storage / Refunds | Selfdestruct refund (stale 24,000) | covered by DEP-04 (obsolete; EIP-3529/6780) |
-| Storage / Data types | bytes32 over string, smallest bytesN, uint8-alone-not-cheaper | ST-05, ST-03/ST-04, EXE-10 |
-| Storage / Inheritance | Child vars pack with parent vars (C3 linearization) | covered by ST-03/ST-04 (same slot-packing mechanism) |
-| Storage / Memory vs Storage | Storage pointer instead of copying to memory | covered by ST-11 |
-| Variables | Avoid public / prefer private, events over storage, named returns | EXE-12, ST-16, EXE-04 |
-| Variables / Mapping vs Array | Mapping over array | covered by ST-07 |
-| Variables / Fixed vs Dynamic | Fixed-size arrays, bytes32 for short string | ST-15, ST-05 |
-| Variables / Fixed vs Dynamic | Additive over subtractive array ops | omitted: this is the ST-13/ST-01 refund mechanism, and as stated is partly wrong (truncating earns the refund) |
-| Functions | external/calldata params, function ordering, payable, modifiers-as-functions | CD-03 (FBD-08 for the debunked external<public claim), EXE-14, DEP-02/DEP-07 (FBD-05), DEP-05 |
-| Functions / Fallback | Fallback avoids selector dispatch | omitted: one-line mention, no measurement; dispatch cost is EXE-14, packed fallback calldata CD-04 |
-| Loops | Memory vars, avoid unbounded, no zero-init, `++i` | ST-02/EXE-24, DEP-10, EXE-06 |
-| Operations | Operand ordering, short-circuiting, unchecked | EXE-11, EXE-07 |
-| Other | Dead code, minimize cross-contract calls (EXTCODESIZE) | DEP-11, XC-06 |
-| Other / Libraries | External library keeps bytecode out of client | covered-adjacent DEP-12 (same lib-vs-inline deployment tradeoff, opposite direction) |
-| Other / Errors | Short require strings; require-vs-assert gas | EXE-23; assert note omitted (stale pre-0.8 and a correctness point, not gas) |
-| Other / Hash | keccak256 cheaper than sha256/ripemd160 | omitted: applicable only when hash choice is free, which interop almost always dictates otherwise |
-| Other | ERC1167 minimal proxy for many clones | covered by DEP-06 |
-| Merkle proof | Prove large data with a small proof | omitted: one-line, no mechanism; the allowlist-specific tradeoff is ARC-02 |
-| Yul tricks | Access lists | covered by XC-03 |
-| Yul tricks | Keep data in calldata; sub-32-byte caveat; negative-value calldata cost; write to existing slot (EIP-2200); SSTORE2 | CD-03, EXE-10, CD-02, ST-01, ST-10 |
-| Yul tricks | Vanity-pack two addresses into one storage slot | omitted: covered-adjacent ST-03 + CD-01; exotic, no measurement |
-| Yul tricks | `iszero()` before JUMP; `gas()` in `call()`; copy Solmate assembly; verify Yul beats compiler | omitted: opaque/version-dependent micro-tips or meta-advice, no durable mechanism |
-| Yul tricks | Remove unnecessary NFT zero-address checks | omitted: security-sensitive contest advice, not a mechanical gas transform |

@@ -126,4 +126,4 @@ function safeAdd(uint256 a, uint256 b) public pure returns (uint256 c) {
 - **Savings**: avoids depositing the library's unused code and, for external libraries, the DELEGATECALL into it on every use. For SafeMath on solc >= 0.8.0 the win is also at runtime: its explicit overflow check duplicates the compiler's built-in one, so dropping it removes a redundant check per operation (a benchmark measures an add at 348 gas via `SafeMath.add` versus 303 gas for `a + b`)
 - **Preconditions**: the inlined implementation reproduces the library's behavior and safety exactly
 - **Risks**: forgoes the library's audits and reuse; on solc 0.8.0+ arithmetic is checked by default, so reimplementing SafeMath specifically is usually pointless (just use `+`/`-`/`*`); reinventing security-sensitive code is a common bug source
-- **Source**: kadenzipfel gas-optimizations, Unnecessary Libraries; 0xKitsune EVM-Gas-Optimizations, Don't use SafeMath when using solidity >= 0.8.0
+- **Source**: kadenzipfel gas-optimizations, Unnecessary Libraries
