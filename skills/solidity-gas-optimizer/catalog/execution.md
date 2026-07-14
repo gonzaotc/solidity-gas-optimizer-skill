@@ -247,3 +247,78 @@ function equal(bytes memory a, bytes memory b) internal pure returns (bool) {
 - **Preconditions**: only relevant where string reverts are kept at all; the shortened message must stay meaningful
 - **Risks**: changes the observable revert message, breaking tests and integrators that match on it; custom errors (solc ≥0.8.4) are cheaper than any string and usually the better fix
 - **Source**: WTF-gas-optimization, item 15
+
+## EXE-24 · Hoist loop-invariant computation out of the loop
+- **Kind**: transform
+- **Detect**: an expression inside a loop body whose operands never change across iterations, recomputed every pass, e.g. a comparison on a variable not written in the loop
+- **Hint**: loop-invariant expression recomputed each iteration
+- **Transform**: evaluate the invariant expression once before the loop into a local, then read the local inside the loop
+```solidity
+bool increment = x > 1;
+for (uint256 i; i <= 100; ++i) {
+    if (increment) {
+        sum += 1;
+    }
+}
+```
+- **Savings**: runs the expression's opcodes once instead of once per iteration
+- **Preconditions**: operands provably unchanged for the loop's duration (not written in the body, no aliasing through storage or external calls); the optimizer performs loop-invariant code motion in many cases, so measure whether a manual hoist still helps
+- **Risks**: hoisting an expression with side effects, or one that actually depends on a value the loop mutates, changes behavior; none when it is genuinely invariant
+- **Source**: kadenzipfel gas-optimizations, Comparison with Unilateral Outcome in a Loop; Repeated Computations in a Loop
+
+## EXE-25 · Replace a loop with its constant outcome
+- **Kind**: transform
+- **Detect**: a loop whose result is fixed at compile time because its bounds and body are constant, e.g. adding a literal a fixed number of times
+- **Hint**: loop computing a compile-time-constant result
+- **Transform**: drop the loop and return the precomputed constant
+```solidity
+function constantOutcome() public pure returns (uint256) {
+    return 100;
+}
+```
+- **Savings**: removes the per-iteration overhead (counter increment, bound comparison, conditional jump) and the body entirely, leaving a single constant
+- **Preconditions**: the outcome is provably independent of any runtime input or state; solc constant-folds and can unroll small fixed loops but does not reliably collapse an arbitrary counted loop to its result, so measure
+- **Risks**: the constant must equal the loop's result for every reachable state; a hidden input dependency makes the rewrite wrong
+- **Source**: kadenzipfel gas-optimizations, Constant Outcome of a Loop
+
+## EXE-26 · Remove redundant (opaque) predicates
+- **Kind**: transform
+- **Detect**: a condition whose truth is already implied by an enclosing condition, so it is always true when reached, e.g. `if (x > 1) { if (x > 0) { ... } }`
+- **Hint**: nested condition already implied by an outer one
+- **Transform**: drop the redundant inner check and inline its body
+- **Savings**: removes the redundant comparison and conditional jump from every execution that reaches it
+- **Preconditions**: the inner condition is logically entailed by the outer for all values; the optimizer resolves many such predicates, so confirm a measurable difference
+- **Risks**: none when the entailment truly holds; misjudging it drops a check that was doing real work
+- **Source**: kadenzipfel gas-optimizations, Opaque Predicate
+
+## EXE-27 · Fuse loops over the same range
+- **Kind**: transform
+- **Detect**: two or more consecutive loops with identical bounds and independent bodies
+- **Hint**: consecutive loops sharing the same bounds
+- **Transform**: merge the bodies into a single loop over the shared range
+```solidity
+for (uint256 i; i < 100; ++i) {
+    x += 1;
+    y += 1;
+}
+```
+- **Savings**: pays the loop control overhead (counter init, per-iteration comparison, increment, jump) once instead of once per loop
+- **Preconditions**: identical iteration ranges and bodies that do not depend on a prior loop having fully completed
+- **Risks**: fusing bodies that must run in separate full passes (one loop's later iterations feeding the next loop's early ones) changes results
+- **Source**: kadenzipfel gas-optimizations, Loop Fusion
+
+## EXE-28 · Check exact division with mulmod
+- **Kind**: transform
+- **Detect**: a divisibility/exactness check written by dividing then multiplying back, e.g. `value != (newValue * denominator) / numerator`
+- **Hint**: exact-division check via mul then div
+- **Transform**: test the remainder directly with `mulmod`
+```solidity
+newValue = (value * numerator) / denominator;
+if (mulmod(value, numerator, denominator) != 0) {
+    revert InExactDivision();
+}
+```
+- **Savings**: `mulmod` does the multiply-and-mod in one opcode for 8 gas, versus a separate `MUL` (5) and `DIV` (5) for the round-trip check
+- **Preconditions**: the check is verifying whether a division truncated; `mulmod(value, numerator, denominator)` is nonzero exactly when `(value * numerator)` is not divisible by `denominator`
+- **Risks**: `mulmod` reverts on a zero modulus, matching division by zero; the intent reads less obviously than the explicit form
+- **Source**: kadenzipfel gas-optimizations, Using Mulmod Over Mul & Div

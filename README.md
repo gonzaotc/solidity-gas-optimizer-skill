@@ -102,4 +102,9 @@ To add a technique card, use the `solidity-gas-reference-creator` skill; [CONTRI
 The catalog is seeded from public gas-optimization work. Full item-to-card coverage is mapped in [`catalog/SOURCES.md`](./skills/solidity-gas-optimizer/catalog/SOURCES.md).
 
 - [RareSkills Book of Gas Optimization](https://www.rareskills.io/post/gas-optimization)
+<<<<<<< HEAD
 - [WTF-gas-optimization (WTF Academy)](https://github.com/WTFAcademy/WTF-gas-optimization)
+- [kadenzipfel/gas-optimizations](https://github.com/kadenzipfel/gas-optimizations)
+=======
+- [WTF-gas-optimization (WTF Academy)](https://github.com/WTFAcademy/WTF-gas-optimization)
+>>>>>>> c0487abb04989f908ad5f1218a3ed5c46e70501f
