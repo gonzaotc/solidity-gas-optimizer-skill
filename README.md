@@ -92,11 +92,6 @@ skills/
 
 To add a technique card, use the `solidity-gas-reference-creator` skill; [CONTRIBUTING.md](./CONTRIBUTING.md) covers the process, the by-hand path, and skill improvements.
 
-## Roadmap
-
-- Benchmark repo: a fixture codebase of known inefficiencies; comparing two runs' reports shows a PR's effect.
-- Independent judge across providers: run the audit on Claude and the Phase 5 challenge on a different model, for genuine model diversity rather than fresh-context isolation. Likely an opt-in Bash seam (`GAS_CHALLENGE_CMD`) that passes the rubric, policy, report, and diffs to an external CLI and merges its verdicts back.
-
 ## Acknowledged sources
 
 The catalog is seeded from public gas-optimization work. Full item-to-card coverage is mapped in [`catalog/SOURCES.md`](./skills/solidity-gas-optimizer/catalog/SOURCES.md).

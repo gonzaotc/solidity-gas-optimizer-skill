@@ -52,9 +52,18 @@ Design-level opportunities that cannot be applied as a local diff. Estimates, no
 | Card | Suggestion | Est. impact | Cost / consideration |
 |------|------------|-------------|-----------------------|
 
+## Coverage-gap candidates
+
+Real optimization candidates that could not be measured because no test exercises their code. These were never measured, so they are not rejections. Each is an estimate, and each doubles as a coverage signal: unmeasurable hot code is under-tested code. **Add the tests below and re-run the audit** to turn these into measured findings.
+
+Ordered by estimated impact (highest first).
+
+| Card | Location | Est. impact (estimate) | Tests needed to measure |
+|------|----------|------------------------|-------------------------|
+
 ## Rejected candidates
 
-Measured no-gain, regressions, broken tests, or tradeoff-analyzer rejections. 
+Measured no-gain, regressions, broken tests, or tradeoff-analyzer rejections. Candidates that were never measurable belong in the coverage-gap section above, not here.
 
 | Card | Location | Result | Note |
 |------|----------|--------|------|
