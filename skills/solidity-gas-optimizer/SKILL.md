@@ -7,7 +7,7 @@ argument-hint: "[files or directories to audit; defaults to the main contracts d
 
 # Solidity Gas Optimizer
 
-Produce an audit-style gas report for a Solidity codebase. Every claimed saving is measured with the project's own toolchain and checked against its tests; every surviving change is then challenged by a separate-context tradeoff analysis (a different model or provider where the environment offers one, or a labeled self-review as a last resort). Idiomatic Solidity is the default: an optimization must pay for its complexity or it is rejected.
+Produce an audit-style gas report for a Solidity codebase. Every claimed saving is measured with the project's own toolchain and checked against its tests; every surviving change is then challenged by a separate-context tradeoff analysis (a different model or provider where the environment offers one, or a labeled self-review as a last resort). Idiomatic Solidity is the default: an optimization must pay for its complexity or it is rejected. A candidate that cannot be measured because no test exercises it is never silently dropped: it is surfaced as a coverage gap, so the audit also flags where the codebase is under-tested.
 
 **Audience and invocation.** This is an agent skill: the human states the intent ("gas-optimize this contract") and the agent runs the audit; the scripts are not meant to be run by hand. It assumes Solidity familiarity and does not scaffold a project. Paths below are relative to this skill's directory.
 
@@ -20,7 +20,7 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 3. Do not proceed on a failing baseline. If the test suite fails before you change anything, stop and report that instead.
 4. One transform per commit. Gas attribution and human cherry-picking both depend on it.
 5. Revert anything that measures flat or worse, or breaks a test, and record it in the report's rejected table. Negative results are findings.
-6. Passing tests are necessary, not sufficient. If a transform touches lines no test exercises, say so in the finding instead of calling it verified and recommend to add tests.
+6. Passing tests are necessary, not sufficient, and an unmeasurable candidate is a finding, not a discard. A real candidate whose target no test exercises cannot be measured: never call it verified, never fold it into the rejected table, and never silently drop it. Route it to the coverage-gap section of the report (Phase 4) with a labeled estimate and the specific tests needed to make it measurable. If a transform only partially touches untested lines, say so in the finding instead of calling it verified.
 7. Findings are valid only for the compiler settings they were measured under. Record solc version, optimizer runs, and via-IR in the report.
 
 ## Reference catalog
@@ -28,6 +28,27 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 `catalog/INDEX.md` lists every technique: ID, kind, detect hint. Read INDEX.md in full at scan time. Open a category file (`catalog/storage.md` etc.) only when its hints match the code under review. Never scan from memory alone; walk the checklist.
 
 - **Kind**: `transform` enters the verify loop, then the Phase 5 challenge; `advisory` is reported as a labeled estimate and never applied by the run. Every applied change gets a Phase 5 verdict and merges only by human decision. (Full schema: `../solidity-gas-reference-creator/references/card-spec.md`. To add or regenerate cards, use the `solidity-gas-reference-creator` skill; this skill is read-only over the catalog.)
+
+## Intake
+
+Before discovery, print the banner and gather scope in one exchange. Skip any question the user already answered when invoking the skill, and confirm rather than re-ask. If the user said to just go, take the defaults below and proceed. Do not start Phase 0 until scope is settled.
+
+Print exactly:
+
+```
+ @@@@@@@   @@@@@@   @@@@@@     @@@@@@  @@@@@@@  @@@@@@@ @@@ @@@@@@@@@@  @@@ @@@@@@@@ @@@@@@@@ @@@@@@@  
+!@@       @@!  @@@ !@@        @@!  @@@ @@!  @@@   @!!   @@! @@! @@! @@! @@!      @@! @@!      @@!  @@@ 
+!@! @!@!@ @!@!@!@!  !@@!!     @!@  !@! @!@@!@!    @!!   !!@ @!! !!@ @!@ !!@    @!!   @!!!:!   @!@!!@!  
+:!!   !!: !!:  !!!     !:!    !!:  !!! !!:        !!:   !!: !!:     !!: !!:  !!:     !!:      !!: :!!  
+ :: :: :   :   : : ::.: :      : :. :   :          :    :    :      :   :   :.::.: : : :: ::   :   : : 
+```
+
+Then one line on what the skill does: a measured gas audit, one transform per commit, each survivor challenged by a separate-context tradeoff pass. Then ask all of the following in a single message so the user answers in one round:
+
+1. **Target and scope.** What to audit: a repo URL, a local folder, or a single file. Warn that token usage grows with scope, and recommend scoping to a few contracts at a time. If the target is a URL, clone it locally before Phase 0.
+2. **Gas policy.** Ask whether they have a policy to provide. Explain that a policy encodes the project's constraints (layout freeze, assembly style, hot paths, noise floor) and sharpens every verdict, so it is recommended, but it is optional; note that if the target already ships one (`.claude/gas-policy.md` or a root `gas-policy.md`) it is picked up automatically in Phase 0.
+3. **Report location.** Ask for a preferred output location; the default is a `gas-reports/` directory inside the audited repo.
+4. **Model.** If running in Claude Code, note that stronger models tend to find and judge more, so the strongest available is recommended. A running session cannot switch its own model: if they want a different one, they select it (`/model` or relaunch) before continuing. If the environment can route the Phase 5 challenge to a different provider, mention that too.
 
 ## Phase 0: Discover
 
@@ -41,16 +62,17 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 1. Run the test suite once; if it fails, stop and report. When the user scopes the audit to specific contracts and nothing else in the repo imports them (verify with a grep), scope the baseline and validation to the target's test files plus a full compile instead of the whole suite, and record the narrowed validation in the report. Treat the grep as a heuristic: it misses interface-only calls, address casts, and re-exports, so when in doubt fall back to the full suite. In large repositories a full-suite run per candidate is prohibitive; a scoped and recorded validation is preferable to a skipped one.
 2. Run `scripts/gas-baseline.sh <framework> <baseline-dir> <repo-root>` with the baseline dir in scratch space outside the repo (e.g. `BASELINE_DIR=$(mktemp -d)`), never inside the repo. For Hardhat, when the detected `HARDHAT_GAS_TOGGLE` variable is not `REPORT_GAS`, pass it via `GAS_ENV` (e.g. `GAS_ENV=GAS`). If the baseline command fails, stop; without a baseline there is nothing to measure against.
 3. Rank the in-scope functions by measured cost (and call frequency where the reporter shows it) from the per-function report the baseline captured: `gas-report.txt` (the `RANKING` output) for Foundry, the reporter table for Hardhat. Rank only from this artifact: `gas.snapshot` is the diff baseline of record, and its per-test totals are not comparable to the per-function report, so never mix the two numbers. This ranking, not the catalog order, drives the scan in Phase 2: gas lives in a few hot functions, so look there first.
-4. Note in-scope contracts with weak or missing test coverage; their findings can compile and pass tests but cannot be called measured, and must be labeled accordingly.
+4. Build a coverage map of the in-scope functions: which ones a test actually exercises (grep the test directory for calls and deployments; a function absent from the baseline per-function report is a strong signal nothing exercises it). This map decides, in Phase 2, whether a candidate can be measured at all. Functions with no exercising test cannot yield a measured finding; their candidates become coverage-gap candidates rather than being dropped.
 
 ## Phase 2: Scan
 
 1. Read `catalog/INDEX.md`.
 2. Scan hottest-first: take the Phase 1 ranking and walk the catalog against the top functions before anything else, since that is where a matched technique repays most. Then sweep the remaining in-scope code against the full INDEX so nothing is missed. When a Detect hint matches or sounds slightly relevant, open the category file and check the card's full Preconditions before recording a candidate.
 3. The catalog is the minimum scan set, not a ceiling and may be incomplete. If you see a real gas waste with no matching card, record it as an `uncarded` candidate; it earns a finding only by passing the same Phase 3 verify loop and Phase 5 challenge as any card. Never claim a saving from memory without measuring it. Flag survivors for a follow-up card via the reference-creator skill.
-4. Record candidates as `{card ID or "uncarded", location, why it applies, estimated impact, kind after policy}`.
+4. Record candidates as `{card ID or "uncarded", location, why it applies, estimated impact, kind after policy, coverage}`, where `coverage` comes from the Phase 1.4 map: `exercised` or `none`.
 5. Advisory candidates (including any the policy reclassified to report-only) skip Phase 3 and go straight to the report.
-6. Order the collected transform candidates for Phase 3 by expected value: hot paths and per-call savings before deploy-only and cold paths.
+6. A transform candidate whose target has `coverage: none` cannot be measured. Do not push it through Phase 3 and do not drop it: route it to the coverage-gap section (Phase 4) with its labeled estimate and the specific tests that would make it measurable. This is the audit's coverage-probe value: unmeasurable hot code is under-tested code, and the report says so.
+7. Order the remaining (`exercised`) transform candidates for Phase 3 by expected value: hot paths and per-call savings before deploy-only and cold paths.
 
 ## Phase 3: Verify loop
 
@@ -59,14 +81,14 @@ Work on a dedicated branch (`gas/<scope>`). For each transform candidate, strict
 1. Apply the minimal diff for this one card.
 2. Compile, then run targeted tests: test files matching the contract name, plus any test file that imports or deploys the contract (grep the test directory). Failing tests mean either a bad application or a real behavior change; retry once, then revert and record.
 3. Measure with `scripts/gas-compare.sh <framework> <baseline-dir> <repo-root>` against the baseline dir from Phase 1.2. Record the deployment/code-size delta alongside the runtime delta: bigger code is a real cost, and for internal-function libraries it lands in every consumer contract. The Foundry snapshot diff is deterministic; the Hardhat reporter output is not line-deterministic, so for Hardhat read the diff and extract each function's before/after by hand, and label any finding measured that way as manually extracted. When both toolchains cover the target, prefer the Foundry measurement.
-4. If the improvement is above the policy's noise threshold (default: 10 gas per call unless the policy sets otherwise; this default is a heuristic, not a measured bound), run the project's formatter and linter on the touched file, then commit as `gas: <CARD-ID> <file>: <summary> (<delta>)`. If the project defines no formatter or linter, run `forge fmt` on the touched file and skip linting. If the measurement is flat or a regression, revert and record. If a pre-commit hook fails for reasons unrelated to the change, record the hook's full failure output and the specific reason it is unrelated in the report, then commit with `--no-verify`; when in doubt whether the failure is related, fail loudly and stop rather than bypass.
+4. If the improvement is above the policy's noise threshold (default: 10 gas per call unless the policy sets otherwise; this default is a heuristic, not a measured bound), run the project's formatter and linter on the touched file, then commit as `gas: <CARD-ID> <file>: <summary> (<delta>)`. If the project defines no formatter or linter, run `forge fmt` on the touched file and skip linting. If the measurement is a regression, revert and record it as rejected. If it is flat, revert; a genuine flat result is rejected, but a change that should move gas yet measures exactly zero because no test drives the touched path is a coverage gap, not a measured no-gain: reclassify it to the coverage-gap section with the tests it needs. If a pre-commit hook fails for reasons unrelated to the change, record the hook's full failure output and the specific reason it is unrelated in the report, then commit with `--no-verify`; when in doubt whether the failure is related, fail loudly and stop rather than bypass.
 5. Every surviving change stays on the branch for explicit review; never present a survivor as settled. The merge decision is the team's for every finding.
 
 After the last candidate, run the **full** suite once. If it fails, bisect the kept commits to find the interaction and drop the offender. Keep the loop serial: interleaved candidates corrupt gas attribution.
 
 ## Phase 4: Report
 
-Fill `templates/report.md` and write it as `gas-report-<target>-<date>.md` to the location the user named, otherwise a `gas-reports/` directory inside the audited repo (created if absent), never this skill's repo. Keep it untracked: add `gas-reports/` to the audited repo's `.git/info/exclude`, or tell the user it must stay uncommitted. The report is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered `GAS-<H|M|L>-NN` (severity in the ID, numbered within each severity), ordered by severity. Include all four populations: applied-and-measured, team-decision, advisory, and rejected with their measured evidence.
+Fill `templates/report.md` and write it as `gas-report-<target>-<date>.md` to the location the user named, otherwise a `gas-reports/` directory inside the audited repo (created if absent), never this skill's repo. Keep it untracked: add `gas-reports/` to the audited repo's `.git/info/exclude`, or tell the user it must stay uncommitted. The report is the primary deliverable: hand the user its path explicitly at the end, never leave it only in scratch space. Findings are numbered `GAS-<H|M|L>-NN` (severity in the ID, numbered within each severity), ordered by severity. Include all five populations: applied-and-measured, team-decision, advisory, rejected (with their measured evidence), and coverage-gap. The coverage-gap section is its own population, never merged into rejected: rejected candidates were measured and failed, coverage-gap candidates were never measurable. List each coverage-gap entry with the function, the technique that would apply, a labeled estimated impact, and the specific tests needed, then rank them by estimated impact so a hot uncovered function reads as urgent and a cold rare one does not. Close the section by telling the user to add those tests and re-run the audit.
 
 Severity (impact axis):
 
