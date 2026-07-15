@@ -7,6 +7,8 @@ reports/
 # Cross-run archive of gas-optimization reports written into the skill folder.
 gas-reports/
 
+research/
+
 # Generated DX audit reports; the deliverable is untracked, never committed into this repo.
 dx-audit/
 
