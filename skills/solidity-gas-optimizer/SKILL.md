@@ -31,9 +31,9 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 
 ## Intake
 
-Before discovery, print the banner and gather scope in one exchange. Skip any question the user already answered when invoking the skill, and confirm rather than re-ask. If the user said to just go, take the defaults below and proceed. Do not start Phase 0 until scope is settled.
+The banner is the first thing the user sees. Print it, then the tagline, as the very first output of the run, before any tool call: no clone, no `ls`, no advisor, no questions, no thinking-aloud ahead of it. The scope proposal in step 2 needs the repo enumerated, but that enumeration happens after the banner is on screen, not before. Then gather scope in one exchange. Skip any question the user already answered when invoking the skill, and confirm rather than re-ask. If the user said to just go, take the defaults below and proceed. Do not start Phase 0 until scope is settled.
 
-Print exactly:
+Print exactly (before anything else):
 
 ```
   _____           ____       __  _       _                      
