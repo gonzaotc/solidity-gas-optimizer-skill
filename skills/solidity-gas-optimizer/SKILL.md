@@ -36,19 +36,29 @@ Before discovery, print the banner and gather scope in one exchange. Skip any qu
 Print exactly:
 
 ```
- @@@@@@@   @@@@@@   @@@@@@     @@@@@@  @@@@@@@  @@@@@@@ @@@ @@@@@@@@@@  @@@ @@@@@@@@ @@@@@@@@ @@@@@@@  
-!@@       @@!  @@@ !@@        @@!  @@@ @@!  @@@   @!!   @@! @@! @@! @@! @@!      @@! @@!      @@!  @@@ 
-!@! @!@!@ @!@!@!@!  !@@!!     @!@  !@! @!@@!@!    @!!   !!@ @!! !!@ @!@ !!@    @!!   @!!!:!   @!@!!@!  
-:!!   !!: !!:  !!!     !:!    !!:  !!! !!:        !!:   !!: !!:     !!: !!:  !!:     !!:      !!: :!!  
- :: :: :   :   : : ::.: :      : :. :   :          :    :    :      :   :   :.::.: : : :: ::   :   : : 
+  _____           ____       __  _       _                      
+ / ___/__ ____   / __ \___  / /_(_)_ _  (_)__ ___ ____          
+/ (_ / _ `(_-<  / /_/ / _ \/ __/ /  ' \/ /_ // -_) __/          
+\___/\_,_/___/ _\____/ .__/\__/_/_/_/_/_//__/\__/_/      ___    
+  / /  __ __  / __ \/_/  ___ ___/_  / ___ ___  ___  ___ / (_)__ 
+ / _ \/ // / / /_/ / _ \/ -_) _ \/ /_/ -_) _ \/ _ \/ -_) / / _ \
+/_.__/\_, /  \____/ .__/\__/_//_/___/\__/ .__/ .__/\__/_/_/_//_/
+     /___/       /_/                   /_/  /_/                 
 ```
 
-Then one line on what the skill does: a measured gas audit, one transform per commit, each survivor challenged by a separate-context tradeoff pass. Then ask all of the following in a single message so the user answers in one round:
+Then print exactly one short line, no more, no preamble:
 
-1. **Target and scope.** What to audit: a repo URL, a local folder, or a single file. Warn that token usage grows with scope, and recommend scoping to a few contracts at a time. If the target is a URL, clone it locally before Phase 0.
-2. **Gas policy.** Ask whether they have a policy to provide. Explain that a policy encodes the project's constraints (layout freeze, assembly style, hot paths, noise floor) and sharpens every verdict, so it is recommended, but it is optional; note that if the target already ships one (`.claude/gas-policy.md` or a root `gas-policy.md`) it is picked up automatically in Phase 0.
-3. **Report location.** Ask for a preferred output location; the default is a `gas-reports/` directory inside the audited repo.
-4. **Model.** If running in Claude Code, note that stronger models tend to find and judge more, so the strongest available is recommended. A running session cannot switch its own model: if they want a different one, they select it (`/model` or relaunch) before continuing. If the environment can route the Phase 5 challenge to a different provider, mention that too.
+```
+Automated ai-assisted solidity gas optimizer.
+```
+
+Then ask all of the following in a single message so the user answers in one round:
+
+1. **Target.** What to audit: a repo URL, a local folder, or a single file. If the target is a URL, clone it locally before Phase 0.
+2. **Scope.** Token usage grows with scope, so never audit a whole repo blindly. If the user named specific files, confirm that set. If they gave no target, or pointed at a whole repo or a directory, enumerate the candidate contracts and propose a scoped subset to run first (a few contracts, favoring the largest or most call-heavy surface), then ask them to confirm or adjust before starting. Recommend scoping to a few contracts at a time.
+3. **Gas policy.** Ask whether they have a policy to provide. Explain that a policy encodes the project's constraints (layout freeze, assembly style, hot paths, noise floor) and sharpens every verdict, so it is recommended, but it is optional; note that if the target already ships one (`.claude/gas-policy.md` or a root `gas-policy.md`) it is picked up automatically in Phase 0.
+4. **Report location.** Ask for a preferred output location; the default is a `gas-reports/` directory inside the audited repo.
+5. **Model.** If running in Claude Code, note that stronger models tend to find and judge more, so the strongest available is recommended. A running session cannot switch its own model: if they want a different one, they select it (`/model` or relaunch) before continuing. If the environment can route the Phase 5 challenge to a different provider, mention that too.
 
 ## Phase 0: Discover
 
@@ -105,3 +115,5 @@ If no Agent tool is available (worst case), do the challenge in a separate pass:
 ## Deliverable
 
 The filled report plus the work branch with one commit per surviving change. Humans decide what merges; the `team-decision` findings are the agenda for that review.
+
+A PR is never required. After handing over the report, just mention that the user can, if they want, open a **draft PR** of the work branch, filled from `templates/pull-request.md` (push to the user's fork; target the branch the work was based on, so the diff is exactly the optimizations). Only do it if the user asks: opening it is outward-facing, so confirm first, keep the AI-generated note, and never present suggestions on someone else's PR as merged changes.
