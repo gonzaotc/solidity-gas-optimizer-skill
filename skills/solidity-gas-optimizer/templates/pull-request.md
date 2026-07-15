@@ -9,9 +9,18 @@
 
 | Measurement | Scope | Tests |
 |---|---|---|
-| {{framework}}, solc {{ver}}, runs {{runs}}, via-IR {{bool}} | {{what was analyzed: contracts/functions}} | {{suite}} suite, {{T}} passing |
+| {{framework}}, solc {{ver}}, runs {{runs}}, via-IR {{bool}} | {{full audited set: every contract/module in scope, not just where a finding landed}} | {{suite}} suite, {{T}} passing |
+
+<!-- Scope cell: mirror the report's full audited set (all contracts/modules examined),
+     never narrow it to the single function a finding touched. -->
 
 {{N}} independent gas optimization candidates were found, one commit each and keyed by the IDs below. It's recommended to review them one by one, via the [commits view]({{commits-url}}).
+
+<!-- Keep the line above to one or two lines: candidate count plus at most one sentence
+     of takeaway. Do NOT add a separate audit-summary or editorializing paragraph here
+     (e.g. "the path is close to idiomatic-optimal", "micro-tricks measured flat and were
+     dropped"). That analysis belongs in the report, not the PR body. -->
+
 
 | ID | Change | Function | Δ runtime /call | Δ deploy gas |
 |----|--------|----------|-----------------|--------------|
