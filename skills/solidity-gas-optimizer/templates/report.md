@@ -1,3 +1,6 @@
+<!-- Style: no dashes. Never use em dashes, en dashes, or a hyphen as a sentence
+     connector; rephrase into separate clauses or use a comma/colon instead. -->
+
 # Gas Optimization Report: {{scope}}
 
 | | |
