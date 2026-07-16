@@ -14,6 +14,7 @@ Three Claude skills and a technique catalog for measured gas-optimization audits
 ## Where things live
 
 - Audit loop and rules: `skills/solidity-gas-optimizer/SKILL.md`
+- Gas cost-accounting mindset (reasoning layer for uncarded waste): `skills/solidity-gas-optimizer/references/gas-mindset.md`
 - Default tradeoff rubric: `skills/solidity-gas-tradeoffs-analysis/SKILL.md`
 - Target policy schema (copied into an audited repo's `.claude/gas-policy.md` or a root `gas-policy.md`): `skills/solidity-gas-optimizer/templates/gas-policy.md`
 - Card schema and routing tree: `skills/solidity-gas-reference-creator/references/card-spec.md`

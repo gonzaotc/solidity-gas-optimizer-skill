@@ -23,9 +23,14 @@ Produce an audit-style gas report for a Solidity codebase. Every claimed saving 
 6. Passing tests are necessary, not sufficient, and an unmeasurable candidate is a finding, not a discard. A real candidate whose target no test exercises cannot be measured: never call it verified, never fold it into the rejected table, and never silently drop it. Route it to the coverage-gap section of the report (Phase 4) with a labeled estimate and the specific tests needed to make it measurable. If a transform only partially touches untested lines, say so in the finding instead of calling it verified.
 7. Findings are valid only for the compiler settings they were measured under. Record solc version, optimizer runs, and via-IR in the report.
 
-## Reference catalog
+## Reference catalog and gas mindset
 
-`catalog/INDEX.md` lists every technique: ID, kind, detect hint. Read INDEX.md in full at scan time. Open a category file (`catalog/storage.md` etc.) only when its hints match the code under review. Never scan from memory alone; walk the checklist.
+The scan has two inputs, both read in full at scan time (Phase 2):
+
+- `catalog/INDEX.md` lists every technique: ID, kind, detect hint. Open a category file (`catalog/storage.md` etc.) only when its hints match the code under review. This is the pattern layer: WHAT to look for.
+- `references/gas-mindset.md` is the cost-accounting method for waste no card names: trace where every gas unit goes on the hot path and ask whether that cost needs to exist there. This is the reasoning layer: HOW to find the uncarded.
+
+Never scan from memory alone; walk both.
 
 - **Kind**: `transform` enters the verify loop, then the Phase 5 challenge; `advisory` is reported as a labeled estimate and never applied by the run. Every applied change gets a Phase 5 verdict and merges only by human decision. (Full schema: `../solidity-gas-reference-creator/references/card-spec.md`. To add or regenerate cards, use the `solidity-gas-reference-creator` skill; this skill is read-only over the catalog.)
 
@@ -79,9 +84,14 @@ Then ask all of the following in a single message so the user answers in one rou
 
 ## Phase 2: Scan
 
-1. Read `catalog/INDEX.md`.
-2. Scan hottest-first: take the Phase 1 ranking and walk the catalog against the top functions before anything else, since that is where a matched technique repays most. Then sweep the remaining in-scope code against the full INDEX so nothing is missed. When a Detect hint matches or sounds slightly relevant, open the category file and check the card's full Preconditions before recording a candidate.
-3. The catalog is the minimum scan set, not a ceiling and may be incomplete. If you see a real gas waste with no matching card, record it as an `uncarded` candidate; it earns a finding only by passing the same Phase 3 verify loop and Phase 5 challenge as any card. Never claim a saving from memory without measuring it. Flag survivors for a follow-up card via the reference-creator skill.
+Read `catalog/INDEX.md` and `references/gas-mindset.md` in full at scan time. The catalog is the pattern layer (WHAT to look for); the mindset is the cost-accounting layer (HOW to find waste no card names). Scan hottest functions first and deep, then the cold remainder wide:
+
+1. **Hot functions, all three passes.** Take the top functions from the Phase 1 ranking and run each through all three, since that is where tracing every gas unit repays most:
+   - **Catalog match.** When a Detect hint matches or sounds slightly relevant, open the category file and check the card's full Preconditions before recording a candidate.
+   - **Resource-flow pass** (`references/gas-mindset.md`, Pass A). Tally what the function spends on the EVM (SLOAD/SSTORE, external calls, calldata, memory, loops, hashing, recomputation), then ask at each cost "does this cost need to exist here?" Record every resource paid more often, colder, wider, or earlier than the semantics require.
+   - **Lifecycle pass** (Pass B). Diff paired paths (view/write, deposit/withdraw, happy/revert, first/subsequent, constructor/runtime, one-call/many-call) and account for the delta; record avoidable work on the heavier side.
+2. **Cold remainder, catalog sweep.** Sweep the rest of the in-scope code against the full INDEX so no card is missed, opening a category file on any hint match to check its Preconditions.
+3. The catalog is the minimum scan set, not a ceiling and may be incomplete. A candidate the mindset passes surface with no matching card is recorded as `uncarded`; it earns a finding only by passing the same Phase 3 verify loop and Phase 5 challenge as any card. Follow the mindset file's greedy-finder discipline: record the candidate, do not self-censor, and give `estimated impact` as a rough magnitude class, never a precise gas figure. Never claim a saving from memory without measuring it. Flag survivors for a follow-up card via the reference-creator skill.
 4. Record candidates as `{card ID or "uncarded", location, why it applies, estimated impact, kind after policy, coverage}`, where `coverage` comes from the Phase 1.4 map: `exercised` or `none`.
 5. Advisory candidates (including any the policy reclassified to report-only) skip Phase 3 and go straight to the report.
 6. A transform candidate whose target has `coverage: none` cannot be measured. Do not push it through Phase 3 and do not drop it: route it to the coverage-gap section (Phase 4) with its labeled estimate and the specific tests that would make it measurable. This is the audit's coverage-probe value: unmeasurable hot code is under-tested code, and the report says so.
