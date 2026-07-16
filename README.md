@@ -1,15 +1,13 @@
 # solidity-gas-optimizer
 
-**Automated gas optimization for Solidity code.** Scans a target against a curated catalog of gas optimization techniques, applies and commits one candidate at a time, verifies the tests still pass, measures the real delta, and challenges each candidate with a fresh-context tradeoff analysis (cross-model challenge is on the roadmap).
-
-For developers who already write Solidity.
+**Automated gas optimization for Solidity code.** Scans a target against a curated catalog of gas optimization techniques, applies and commits one candidate at a time, verifies the tests still pass, measures the real delta, and challenges each candidate with a fresh-context tradeoff analysis.
 
 The deliverable is an audit-style report plus a work branch to cherry-pick from.
 
 Two sources of knowledge enrich the audit, kept apart with different purposes:
 
-- A **catalog** (`skills/solidity-gas-optimizer/catalog/`) of gas optimization techniques, one card per technique, seeded from the RareSkills Book of Gas Optimization. Each card is a fact about Solidity and the EVM, free of opinion, so it holds for any project. Savings magnitudes on a card are source-claimed; every audit re-measures them on the target.
-- A **gas policy** (`.claude/gas-policy.md`) per project: how much a saving is worth against readability or auditability is an opinion that differs by project, so the skills ship a minimal default for you to extend, the decision matrix in `skills/solidity-gas-tradeoffs-analysis/SKILL.md`.
+- A **catalog** (`skills/solidity-gas-optimizer/catalog/`) of gas optimization techniques, one card per technique. Each card is a fact about Solidity and the EVM, free of opinion, so it holds for any project.
+- A **gas policy** (`.claude/gas-policy.md`) per project: how much a saving is worth against readability or auditability is an opinion that differs by project, so the skills ship a minimal default for you to extend.
 
 ## Prerequisites
 
@@ -28,9 +26,7 @@ Two sources of knowledge enrich the audit, kept apart with different purposes:
 | 4 Report | Severity-ranked report with measured deltas, negatives included |
 | 5 Challenge | Fresh-context analyzer argues against every finding |
 
-Phase 5 re-judges each finding's worth against the rubric and gas policy; it does not re-run tests or re-measure gas, it weighs the deltas Phase 3 already recorded.
-
-Every finding ends with a verdict and a measured delta; humans decide every merge. By default the audit never applies a change that alters storage layout or the public ABI; those findings are report-only until a gas policy opts in.
+Every finding ends with a verdict and a measured delta; humans decide every merge.
 
 | Verdict | Meaning |
 |---|---|
@@ -47,7 +43,7 @@ $ ln -s "$(pwd)/skills/"* ~/.claude/skills/
 $ ls -l ~/.claude/skills/solidity-gas-*   # verify the three skills are linked
 ```
 
-Installs all three skills globally for Claude Code: `solidity-gas-optimizer` (the audit), `solidity-gas-tradeoffs-analysis` (the challenge), and `solidity-gas-reference-creator` (catalog upkeep). Each skill is a self-contained folder of Markdown and scripts, so any agent tool with a skills directory can use them by pointing at these folders, adapting the path to that tool's convention.
+Installs all three skills globally for Claude Code: `solidity-gas-optimizer` (the audit), `solidity-gas-tradeoffs-analysis` (the challenge), and `solidity-gas-reference-creator` (catalog upkeep).
 
 Then ask Claude Code:
 
@@ -85,8 +81,6 @@ skills/
     ├── references/card-spec.md   card schema, routing tree, rules
     └── scripts/                  index generation + validation (PR gate)
 ```
-
-`temp/` (source working copies) is gitignored scratch and never committed. Audit reports default to a `gas-reports/` directory inside the audited repo, not here.
 
 ## Contributing
 
