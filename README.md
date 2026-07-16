@@ -7,7 +7,7 @@ The deliverable is an audit-style report plus a work branch to cherry-pick from.
 Two sources of knowledge enrich the audit, kept apart with different purposes:
 
 - A **catalog** (`skills/solidity-gas-optimizer/catalog/`) of gas optimization techniques, one card per technique. Each card is a fact about Solidity and the EVM, free of opinion, so it holds for any project.
-- A **gas policy** (`.claude/gas-policy.md`) per project: how much a saving is worth against readability or auditability is an opinion that differs by project, so the skills ship a minimal default for you to extend.
+- A **gas policy** (`.claude/gas-policy.md`): how much a saving is worth against readability or auditability is an opinion that differs by project, so the skills ship a minimal default for you to extend.
 
 ## Prerequisites
 

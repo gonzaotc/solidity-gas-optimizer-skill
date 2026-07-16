@@ -1,6 +1,6 @@
 ---
 name: solidity-gas-optimizer
-description: Run a measured gas-optimization audit on Solidity code. Use when asked to gas-optimize contracts, reduce gas costs, run a gas audit, find gas savings, reduce deployment or creation gas, make a contract cheaper to deploy, or profile gas usage; also for re-running or extending an existing gas audit. Works on Foundry and Hardhat projects. To persist a technique into the catalog for reuse, use solidity-gas-reference-creator instead.
+description: Run a measured gas-optimization audit on Solidity code. Use when asked to gas-optimize contracts, reduce gas costs, run a gas audit, find gas savings, reduce deployment or creation gas, make a contract cheaper to deploy, or profile gas usage; also for re-running or extending an existing gas audit. To persist a technique into the catalog for reuse, use solidity-gas-reference-creator instead.
 allowed-tools: Read, Glob, Grep, Edit, Write, Bash, Agent
 argument-hint: "[files or directories to audit; defaults to the main contracts directory]"
 ---
