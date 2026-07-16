@@ -1,8 +1,6 @@
 # solidity-gas-optimizer
 
-**Automated gas optimization for Solidity code.** Scans a target against a curated catalog of gas optimization techniques, applies and commits one candidate at a time, verifies the tests still pass, measures the real delta, and challenges each candidate with a fresh-context tradeoff analysis.
-
-The deliverable is an audit-style report plus a work branch to cherry-pick from.
+**Automated gas optimization for Solidity code.** Scans a target against a curated catalog of gas optimization techniques, applies and commits one candidate at a time, verifies the tests still pass, measures the real delta, and challenges each candidate with a fresh-context tradeoff analysis. The deliverable is an audit-style report plus a work branch to cherry-pick from.
 
 Two sources of knowledge enrich the audit, kept apart with different purposes:
 
