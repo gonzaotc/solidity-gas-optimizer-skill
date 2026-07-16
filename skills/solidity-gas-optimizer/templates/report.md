@@ -15,20 +15,36 @@
 
 ## Summary
 
-| ID | Technique | Location | Δ gas (measured) | Tests | Verdict |
-|----|-----------|----------|------------------|-------|---------|
-| [GAS-H-01](#gas-h-01) | | | | | |
+| ID | Candidate ID | Technique (card) | Location | Δ gas (measured) | Tests | Verdict |
+|----|--------------|------------------|----------|------------------|-------|---------|
+| [GAS-H-01](#gas-h-01) | | | | | | |
 
-Each ID encodes severity (`H`/`M`/`L` per the skill rubric) and links to its finding below. Verdict comes from the Phase 5 tradeoff analysis; when that ran in the same context rather than a fresh-context agent, mark the verdict `self-reviewed`.
+Each ID encodes severity (`H`/`M`/`L` per the skill rubric) and links to its finding below. `Candidate ID` is the ledger identity that traces the entry back through the discovery funnel to the site that raised it; `Technique (card)` is the catalog card that matched, provenance only, or `uncarded`. Verdict comes from the Phase 5 tradeoff analysis; when that ran in the same context rather than a fresh-context agent, mark the verdict `self-reviewed`.
+
+## Discovery funnel
+
+Every candidate raised in the scan is accounted for. At each transition, candidates in equals candidates passed on plus candidates exiting to a disposition here. If any row does not balance, a candidate vanished: reconcile before trusting the findings below. Competing transforms for one waste count as separate candidates (kept apart at dedup), so three transforms for a single waste are three candidates in.
+
+| Transition | In | Passed on | Exited here | Disposition of exits |
+|---|---|---|---|---|
+| Scan → dedup | | | | — |
+| Dedup → policy/coverage routing | | | | duplicate |
+| Routing → application | | | | advisory (design-level, policy-blocked), coverage-gap (known from coverage map) |
+| Application → measurement | | | | rejected (compile failure, broke targeted tests) |
+| Measurement → integration | | | | rejected (regression, flat, below noise floor), coverage-gap (discovered missing) |
+| Integration → challenge | | | | rejected (integration) |
+| Challenge → report | | | | rejected (challenge), rejected (superseded), kept, team-decision |
+
+Candidates raised: {{n}}. Sum of dispositions (kept + team-decision + advisory + coverage-gap + rejected + duplicate): {{n}}. These must be equal.
 
 ## Findings
 
 Each finding reads top to bottom: what the code does, why it can be optimized, the proposed change, the reason to hold back, and a recommendation for this context. The header carries the measured facts; the evidence line records how the change was verified. IDs run `GAS-<H|M|L>-NN`, numbered within each severity; give every finding an `<a id="gas-<h|m|l>-NN">` anchor matching its Summary link.
 
 <a id="gas-h-01"></a>
-### GAS-H-01 · {{title}} ({{card-id}})
+### GAS-H-01 · {{title}}
 
-`{{file:line}}` · **{{before}} → {{after}} ({{delta}})** measured via {{method}}
+`{{file:line}}` · candidate {{candidate-id}} · card {{card-id or "uncarded"}} · **{{before}} → {{after}} ({{delta}})** measured via {{method}}
 
 **What the code does.** {{Plain description of the function or block under review and its role.}}
 
@@ -48,12 +64,12 @@ Each finding reads top to bottom: what the code does, why it can be optimized, t
 
 _Evidence: {{targeted suites run}}; full suite {{status}}; touched lines covered (agent-asserted, not tool-measured): {{yes/no}}; commit {{ref}}._
 
-## Advisory findings
+## Advisory entries
 
-Design-level opportunities that cannot be applied as a local diff. Estimates, not measurements.
+Estimated opportunities the run does not apply, so they are not findings. Two kinds live here: design-level suggestions that no local diff expresses, and local transforms a hard policy constraint forbids (a layout or ABI freeze, an assembly-averse style). The second kind is a real, applicable diff held back by policy, not by non-locality; note the blocking constraint and frame it as "you would save this if the constraint were lifted."
 
-| Card | Suggestion | Est. impact | Cost / consideration |
-|------|------------|-------------|-----------------------|
+| Candidate ID | Card | Suggestion | Est. impact | Blocked by / consideration |
+|--------------|------|------------|-------------|----------------------------|
 
 ## Coverage-gap candidates
 
@@ -61,12 +77,12 @@ Real optimization candidates that could not be measured because no test exercise
 
 Ordered by estimated impact (highest first).
 
-| Card | Location | Est. impact (estimate) | Tests needed to measure |
-|------|----------|------------------------|-------------------------|
+| Candidate ID | Card | Location | Est. impact (estimate) | Tests needed to measure |
+|--------------|------|----------|------------------------|-------------------------|
 
 ## Rejected candidates
 
-Measured no-gain, regressions, broken tests, or tradeoff-analyzer rejections. Candidates that were never measurable belong in the coverage-gap section above, not here.
+Candidates that were measured and did not earn a keep, or were rejected downstream. Some carry a measured number (`flat`, `regression`, `below noise floor`); others fail before a number exists (`compile failure`, `broke targeted tests`, `integration`) or are rejected on judgment (`challenge`, `superseded by <id>`), so the Result column reads `no measured number` for those. Candidates that were never measurable belong in the coverage-gap section above, not here.
 
-| Card | Location | Result | Note |
-|------|----------|--------|------|
+| Candidate ID | Card | Location | Reason | Result | Note |
+|--------------|------|----------|--------|--------|------|
