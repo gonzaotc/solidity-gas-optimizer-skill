@@ -3,8 +3,11 @@
 # per-function gas report (RANKING output) used to rank hot functions in Phase 1.3;
 # the snapshot stays the diff baseline of record and the two are not interchangeable.
 # Usage: gas-baseline.sh <foundry|hardhat> <output-dir> [repo-root]
-# Env: GAS_ENV overrides the variable enabling the hardhat reporter (default REPORT_GAS;
-#      some configs use GAS via yargs .env('')). TEST_FILES optionally scopes the run.
+# Env: GAS_CMD is the full hardhat gas command from detect-toolchain.sh
+#      (HARDHAT_GAS_CMD, e.g. "npm run test:gas" or "npx hardhat test --gas-stats").
+#      Prefer it. When unset, GAS_ENV overrides the legacy HH2 reporter variable
+#      (default REPORT_GAS; some configs use GAS via yargs .env('')).
+#      TEST_FILES optionally scopes the run.
 set -euo pipefail
 if [ "$#" -lt 2 ]; then
   echo "Usage: gas-baseline.sh <foundry|hardhat> <output-dir> [repo-root]" >&2
@@ -29,7 +32,16 @@ case "$fw" in
     fi
     ;;
   hardhat)
-    env "${GAS_ENV:-REPORT_GAS}=true" npx hardhat test ${TEST_FILES:-} > "$out/gas-report.txt" 2>&1
+    if [ -n "${GAS_CMD:-}" ]; then
+      # Package-manager scripts need `--` to forward file args to the underlying command.
+      sep=""
+      if [ -n "${TEST_FILES:-}" ] && echo "$GAS_CMD" | grep -Eq '(npm|pnpm|yarn) run'; then
+        sep="--"
+      fi
+      ${GAS_CMD} ${sep} ${TEST_FILES:-} > "$out/gas-report.txt" 2>&1
+    else
+      env "${GAS_ENV:-REPORT_GAS}=true" npx hardhat test ${TEST_FILES:-} > "$out/gas-report.txt" 2>&1
+    fi
     echo "BASELINE=$out/gas-report.txt"
     echo "NOTE=hardhat baseline is the reporter table; only functions the tests exercise appear in it"
     ;;

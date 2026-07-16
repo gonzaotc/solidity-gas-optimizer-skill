@@ -10,7 +10,7 @@ Two sources of knowledge enrich the audit, kept apart with different purposes:
 ## Prerequisites
 
 - **Claude Code (or any agent tool with a skills directory).** A skill is a self-contained folder of instructions and scripts an agent loads on demand. See https://code.claude.com/docs/en/skills.
-- **A gas measuring tool: Foundry or Hardhat.** For Foundry, `forge` on PATH (`forge snapshot` is preferred when both are present); for Hardhat, `hardhat-gas-reporter` installed, which covers only the functions the tests exercise.
+- **A gas measuring tool: Foundry or Hardhat.** For Foundry, `forge` on PATH (`forge snapshot` is preferred when both are present); for Hardhat, a gas reporter, which covers only the functions the tests exercise: Hardhat 3 reports gas natively via `--gas-stats`, and Hardhat 2 needs `hardhat-gas-reporter` installed.
 - **A thorough passing test suite.** Thin coverage lets an optimization alter behavior without failing a test, risking silent bugs.
 
 ## How a run works

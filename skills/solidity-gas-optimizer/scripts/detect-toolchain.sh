@@ -48,7 +48,47 @@ if $hardhat; then
   echo "HARDHAT_TEST_CMD=npx hardhat test"
   echo "HARDHAT_TARGETED_TEST_CMD=npx hardhat test <specific test files>"
   [ -d node_modules ] || echo "WARN=node_modules missing; run the package manager install first"
-  if grep -q '"hardhat-gas-reporter"' package.json 2>/dev/null; then
+
+  # Resolve the installed Hardhat major version: gas support differs by major
+  # (HH2 uses the hardhat-gas-reporter plugin; HH3 has a native --gas-stats flag).
+  hh_major=""
+  if [ -f node_modules/hardhat/package.json ]; then
+    hh_major="$(grep -Eo '"version"[[:space:]]*:[[:space:]]*"[0-9]+' node_modules/hardhat/package.json | grep -Eo '[0-9]+$' | head -1)"
+  fi
+  if [ -z "$hh_major" ]; then
+    hh_major="$(grep -Eo '"hardhat"[[:space:]]*:[[:space:]]*"[^"]*"' package.json 2>/dev/null | grep -Eo '[0-9]+' | head -1)"
+  fi
+  [ -n "$hh_major" ] && echo "HARDHAT_VERSION_MAJOR=$hh_major"
+
+  # Surface project-declared scripts: teams wire their real test/gas/coverage
+  # commands here, so this is a first-class discovery input, not the plugin grep alone.
+  # Parse with node (Hardhat guarantees it) since script values may contain braces
+  # that break line-based JSON scraping.
+  gas_script=""; gas_cmd=""
+  if [ -f package.json ] && command -v node >/dev/null 2>&1; then
+    while IFS='=' read -r sname scmd; do
+      [ -z "$sname" ] && continue
+      case "$sname" in
+        test|test:*|gas|gas:*|coverage) echo "HARDHAT_SCRIPT_${sname//[:-]/_}=$scmd" ;;
+      esac
+      if [ -z "$gas_script" ] && echo "$scmd" | grep -Eq -- '--gas-stats|hardhat-gas-reporter|REPORT_GAS'; then
+        gas_script="$sname"; gas_cmd="npm run $sname"
+      fi
+    done < <(node -e 'const s=(require("./package.json").scripts)||{};for(const k in s)console.log(k+"="+s[k])' 2>/dev/null)
+  fi
+
+  if [ -n "$gas_script" ]; then
+    hardhat_measurable=true
+    echo "HARDHAT_GAS_REPORTER=declared-script"
+    echo "HARDHAT_GAS_SCRIPT=$gas_script"
+    echo "HARDHAT_GAS_CMD=$gas_cmd"
+    echo "NOTE=project declares a gas script in package.json; prefer it as the measurement command"
+  elif [ "$hh_major" = "3" ]; then
+    hardhat_measurable=true
+    echo "HARDHAT_GAS_REPORTER=native-gas-stats"
+    echo "HARDHAT_GAS_CMD=npx hardhat test --gas-stats"
+    echo "NOTE=Hardhat 3 reports gas natively via the --gas-stats flag; no plugin needed"
+  elif grep -q '"hardhat-gas-reporter"' package.json 2>/dev/null; then
     hardhat_measurable=true
     echo "HARDHAT_GAS_REPORTER=installed"
     hh_config="$(ls hardhat.config.* 2>/dev/null | head -1)"
@@ -86,7 +126,7 @@ if [ -n "$target_name" ]; then
     if echo "$f" | grep -qi "$target_name" || grep -qi "$target_name" "$f" 2>/dev/null; then
       hardhat_covers=true; break
     fi
-  done < <(find . \( -name '*.test.js' -o -name '*.test.ts' -o -name '*.spec.js' -o -name '*.spec.ts' \) 2>/dev/null)
+  done < <(find . \( -name '*.test.js' -o -name '*.test.ts' -o -name '*.spec.js' -o -name '*.spec.ts' -o -name '*.t.ts' -o -name '*.t.js' \) 2>/dev/null)
 fi
 
 if $forge_ok && $hardhat && [ -n "$target_name" ]; then
