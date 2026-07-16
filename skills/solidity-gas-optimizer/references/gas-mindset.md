@@ -1,6 +1,6 @@
 # Gas mindset: cost-accounting the hot path
 
-The catalog names known patterns. This file is the method for the waste no card names. Read it at scan time alongside `catalog/INDEX.md`. Both passes interrogate the per-function resource inventory built in Phase 1; they do not rebuild it. Its two passes run on the hottest in-scope functions, interleaved with the catalog match on those same functions (Phase 2 step 1); the full-catalog sweep of the colder remainder follows.
+The catalog names known patterns; this file is the method for the waste no card covers. Read it at scan time alongside `catalog/INDEX.md`. Its two passes, resource-flow (A) and lifecycle (B), apply to each inventory row, interleaved with the catalog match.
 
 Gas-hunting is not bug-hunting. A bug hunter breaks assumptions; a gas hunter does cost-accounting. You are not looking for something that is wrong, you are looking for a gas unit that is spent without needing to be. The stance is accountant, not attacker: no threat model, no exploit chain, no victim. The only question is where each gas unit goes and whether that cost has to exist where it is paid.
 
@@ -14,13 +14,13 @@ At every cost you trace, ask one thing:
 
 ## Discipline: greedy finder, measurement is the referee
 
-Record every candidate the anchor question surfaces. Do not argue yourself out of one, do not self-censor a "probably the compiler handles it" hunch. Deciding whether a gas candidate is real needs no judgment from you: Phase 3 measurement is the objective referee, so the finder can be greedy where a security auditor cannot. That judgment is cheap, but the measurement itself is not free: each candidate that reaches Phase 3 costs a compile, targeted tests, and a benchmark cycle, run serially. So record generously, and let Phase 2's expected-value ordering (not this pass) decide what gets measured first. A candidate you drop during scan is gone; a candidate you record and that measures flat is one revert. Bias toward recording.
+Record every candidate the anchor question surfaces. Do not argue yourself out of one, do not self-censor a "probably the compiler handles it" hunch. Deciding whether a gas candidate is real needs no judgment from you: Phase 4 measurement is the objective referee, so the finder can be greedy where a security auditor cannot. That judgment is cheap, but the measurement itself is not free: each candidate that reaches Phase 4 costs a compile, targeted tests, and a benchmark cycle, run serially. So record generously, and let Phase 3's expected-value ordering (not this pass) decide what gets measured first. A candidate you drop during scan is gone; a candidate you record and that measures flat is one revert. Bias toward recording.
 
-An inventory entry is a raw observation; the anchor question is the hypothesis that promotes it to a candidate. When the question flags avoidable waste, output the candidate in the Phase 2 candidate format (`{uncarded, location, expensive resource, redundant operation, semantic constraint, why it applies, estimated impact, kind after policy, coverage}`), tagged `uncarded` unless the trace lands you back on a catalog card. Name the `(location, expensive resource, redundant operation, semantic constraint)` tuple explicitly: it is the mechanism dedup key, so an uncarded mindset hit and a catalog match that describe the same waste and propose the same transform collapse to one candidate. For `estimated impact`, give a rough magnitude class (which resource, how often it is paid, hot or cold path), never a precise gas figure dressed as a measurement. An observation is not yet a candidate, and a candidate is never a finding: the pass hypothesizes the waste; only Phase 3 measurement and the Phase 5 challenge create findings.
+An inventory entry is a raw observation; the anchor question is the hypothesis that promotes it to a candidate. Record each one the question surfaces, tagged `uncarded` unless the trace lands on a catalog card, giving `estimated impact` as a rough magnitude class (which resource, how often paid, hot or cold path), never a precise gas figure. A candidate is not a finding: the pass hypothesizes the waste; only Phase 4 measurement and the Phase 6 challenge create findings.
 
 ## Pass A: resource-flow trace
 
-The Phase 1 resource inventory already lists what each function spends on the EVM; Pass A interrogates the hot rows. Take each resource site the inventory names and apply the anchor question. Working from the written inventory rather than re-reading from memory is what makes this cost-accounting rather than a hunch: a resource on paper cannot be silently skipped. Interrogate each resource class it captures:
+Take each resource site the inventory names and apply the anchor question, by resource class:
 
 - **Storage reads (SLOAD)** — 2100 cold, 100 warm. Look for the same slot read more than once; a storage variable read inside a loop; a read whose value never changes across the call.
 - **Storage writes (SSTORE)** — ~20000 to set a zero slot (plus 2100 cold access on first touch), ~2900–5000 to update a cold clean slot. A slot already written earlier in the transaction is far cheaper, and rewriting a slot's current value costs only warm access. Look for a slot written more than once in a call; a write of a value equal to what is already there; a write that a later branch overwrites.
@@ -51,4 +51,4 @@ For each pair, name the cheaper path's shape and ask whether the expensive path 
 
 ## Boundary: what this method does not do
 
-It does not assign severity (that is measured gas impact in Phase 3), does not score confidence, and does not reason about attackers, profit, or safety beyond the semantic-equivalence constraint each candidate must preserve. It surfaces candidates. Measurement and the tradeoff challenge decide the rest.
+It does not assign severity (that is measured gas impact in Phase 4), does not score confidence, and does not reason about attackers, profit, or safety beyond the semantic-equivalence constraint each candidate must preserve. It surfaces candidates. Measurement and the tradeoff challenge decide the rest.

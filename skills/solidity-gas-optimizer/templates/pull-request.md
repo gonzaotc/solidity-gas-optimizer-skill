@@ -9,10 +9,13 @@
 
 | Measurement | Scope | Tests |
 |---|---|---|
-| {{framework}}, solc {{ver}}, runs {{runs}}, via-IR {{bool}} | {{full audited set: every contract/module in scope, not just where a finding landed}} | {{suite}} suite, {{T}} passing |
+| {{framework}}, solc {{ver}}, runs {{runs}}, via-IR {{bool}} | {{file count and roots, e.g. "12 files across src/multisig/"}} | {{suite}} suite, {{T}} passing |
 
-<!-- Scope cell: mirror the report's full audited set (all contracts/modules examined),
-     never narrow it to the single function a finding touched. -->
+<!-- Scope cell: the one-line summary of the report's confirmed Phase 0 scope tree (all
+     files examined), never narrowed to the file a finding touched. When the full set is
+     more than a handful of files, reproduce the report's Scope tree below this table so
+     the exact set is in the PR too. Folders fully in scope collapse to the folder; a
+     partially included folder lists its in-scope files individually. -->
 
 {{N}} independent gas optimization candidates were found, one commit each and keyed by the IDs below. It's recommended to review them one by one, via the [commits view]({{commits-url}}).
 

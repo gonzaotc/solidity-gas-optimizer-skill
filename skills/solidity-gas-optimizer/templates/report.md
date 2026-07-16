@@ -6,12 +6,20 @@
 | | |
 |---|---|
 | Repo | {{repo}} @ {{commit}} |
-| Scope | {{files}} |
+| Scope | {{file count and roots, e.g. "12 files across src/multisig/"; full tree in the Scope section}} |
 | Date | {{date}} |
 | Toolchain | {{framework}}, solc {{version}}, optimizer runs {{runs}}, via-IR {{bool}} |
 | Baseline | tests green @ {{commit}}, snapshot {{path}} |
 | Work branch | {{branch}} |
 | Active policy | {{resolved gas policy: the path used, or "defaults"}} |
+
+## Scope
+
+The exact files audited, confirmed with the user in Phase 0. Folders fully in scope are collapsed to the folder; a partially included folder lists its in-scope files individually.
+
+```
+{{IDE-style file tree of the confirmed scope}}
+```
 
 ## Summary
 
@@ -19,23 +27,23 @@
 |----|--------------|------------------|----------|------------------|-------|---------|
 | [GAS-H-01](#gas-h-01) | | | | | | |
 
-Each ID encodes severity (`H`/`M`/`L` per the skill rubric) and links to its finding below. `Candidate ID` is the ledger identity that traces the entry back through the discovery funnel to the site that raised it; `Technique (card)` is the catalog card that matched, provenance only, or `uncarded`. Verdict comes from the Phase 5 tradeoff analysis; when that ran in the same context rather than a fresh-context agent, mark the verdict `self-reviewed`.
+Each ID encodes severity (`H`/`M`/`L` per the skill rubric) and links to its finding below. `Candidate ID` is the identity that traces the entry back through the discovery funnel to the site that raised it; `Technique (card)` is the catalog card that matched, provenance only, or `uncarded`. Verdict comes from the Phase 6 tradeoff analysis; when that ran in the same context rather than a fresh-context agent, mark the verdict `self-reviewed`.
 
 ## Discovery funnel
 
-Every candidate raised in the scan is accounted for. At each transition, candidates in equals candidates passed on plus candidates exiting to a disposition here. If any row does not balance, a candidate vanished: reconcile before trusting the findings below. Competing transforms for one waste count as separate candidates (kept apart at dedup), so three transforms for a single waste are three candidates in.
+Every candidate raised in the scan is accounted for. At each transition, candidates in equals candidates passed on plus candidates exiting to a classification here. If any row does not balance, a candidate vanished: reconcile before trusting the findings below. Competing transforms for one waste count as separate candidates (kept apart at dedup), so three transforms for a single waste are three candidates in.
 
-| Transition | In | Passed on | Exited here | Disposition of exits |
+| Transition | In | Passed on | Exited here | Classification of exits |
 |---|---|---|---|---|
 | Scan → dedup | | | | — |
 | Dedup → policy/coverage routing | | | | duplicate |
-| Routing → application | | | | advisory (design-level, policy-blocked), coverage-gap (known from coverage map) |
+| Routing → application | | | | advisory (design-level, policy-blocked), coverage-gap (known from baseline gas report) |
 | Application → measurement | | | | rejected (compile failure, broke targeted tests) |
 | Measurement → integration | | | | rejected (regression, flat, below noise floor), coverage-gap (discovered missing) |
 | Integration → challenge | | | | rejected (integration) |
 | Challenge → report | | | | rejected (challenge), rejected (superseded), kept, team-decision |
 
-Candidates raised: {{n}}. Sum of dispositions (kept + team-decision + advisory + coverage-gap + rejected + duplicate): {{n}}. These must be equal.
+Candidates raised: {{n}}. Sum of classifications (kept + team-decision + advisory + coverage-gap + rejected + duplicate): {{n}}. These must be equal.
 
 ## Findings
 

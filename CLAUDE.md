@@ -15,7 +15,8 @@ Three Claude skills and a technique catalog for measured gas-optimization audits
 
 - Audit loop and rules: `skills/solidity-gas-optimizer/SKILL.md`
 - Gas cost-accounting mindset: `skills/solidity-gas-optimizer/references/gas-mindset.md`
-- Candidate lifecycle (states, dispositions, dedup, funnel): `skills/solidity-gas-optimizer/references/candidate-lifecycle.md`
+- Candidate flow (classifications, dedup, funnel): inlined in `skills/solidity-gas-optimizer/SKILL.md` (Phases 3-6)
+- Run artifact templates (inventory, candidates, verdicts, meta): `skills/solidity-gas-optimizer/templates/artifacts/`
 - Default tradeoff rubric: `skills/solidity-gas-tradeoffs-analysis/SKILL.md`
 - Target policy schema: `skills/solidity-gas-optimizer/templates/gas-policy.md`
 - Card schema and routing tree: `skills/solidity-gas-reference-creator/references/card-spec.md`
